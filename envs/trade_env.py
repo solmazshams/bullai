@@ -15,7 +15,7 @@ class Stock:
         self.symbol = symbol
         self.data = yf.download(symbol, start=start_date, end=end_date)# load data of symbol
         
-
+        
 class TradeEnv(gym.Env):
     def __init__(self, config: EnvContext):
         self.symbols = config.get("symbols", ["TQQQ", "SOXL"])
@@ -24,7 +24,7 @@ class TradeEnv(gym.Env):
         self.end_date = config.get("end_date", " 2023-01-01")      
         self.action = []
         self.stocks = {}
-        scaler = MinMaxScaler()
+
         for s in self.symbols:
             self.stocks[s] = Stock(
                 symbol = s, 
