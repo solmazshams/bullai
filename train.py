@@ -10,6 +10,7 @@ from ray.rllib.algorithms.algorithm import Algorithm
 
 from envs.trade_env import TradeEnv
 from envs.trade_callbacks import TradeCallbacks
+from evaluate import evaluate
 
 import wandb
 
@@ -47,9 +48,9 @@ if __name__ == "__main__":
             lr =  config["lr"],
             train_batch_size = config["batch_size"],
             sgd_minibatch_size = config["minibatch_size"],
-            # model = {
-            #     "use_lstm": True,
-            # },
+            model = {
+                "fcnet_hiddens": [64, 64],
+            },
         )
         .callbacks(TradeCallbacks)
         .rollouts(num_rollout_workers=config["num_workers"])
@@ -62,61 +63,20 @@ if __name__ == "__main__":
     for i in range(config["num_iterations"]):
         result = algo.train()
         print(pretty_print(result))
-        wandb.log(result["custom_metrics"])
 
         if i % 5 == 0:
             checkpoint_dir = algo.save()
             print(f"Checkpoint saved in directory {checkpoint_dir}")
-            eval_results = algo.evaluate()
-            wandb.log(eval_results["custom_metrics"])
+            eval_results = evaluate(checkpoint_dir)
+            wandb.log({"eval_portfolio_value" : eval_results}, step = i)
+
     print("Training completed. Restoring new Trainer for action inference.")
     # Get the last checkpoint from the above training run.
     # checkpoint = result.get_best_result().checkpoint
     # Create new Algorithm and restore its state from the last checkpoint.
-    algo = Algorithm.from_checkpoint(checkpoint_dir)
-
-    # Create the env to do inference in.
-    env = TradeEnv(config = eval_config)
-    obs, info = env.reset()
-
-    episode = 0
-    num_episodes_during_inference = 1
-    episode_reward = 0.0
-
-    while episode < num_episodes_during_inference:
-        # Compute an action (`a`).
-        a = algo.compute_single_action(
-            observation=obs,
-            explore=False,
-            policy_id="default_policy",  # <- default value
-        )
-        # Send the computed action `a` to the env.
-        obs, reward, done, truncated, info = env.step(a)
-        episode_reward += reward
-        # Is the episode `done`? -> Reset.
-        if done:
-            COLOR_BLUE = "\033[34m"
-            COLOR_GREEN = "\033[32m"
-            COLOR_YELLOW = "\033[33m"
-            COLOR_CYAN = "\033[36m"
-            COLOR_RESET = "\033[0m"
-            print(f"Episode done: Total reward = {episode_reward}")
-            print("Portfolio:")
-            print(f"Trading:          {COLOR_BLUE}{eval_config['symbols']}{COLOR_RESET}")
-            print(f"Start Date:       {COLOR_GREEN}{eval_config['start_date']}{COLOR_RESET}")
-            print(f"End Date:         {COLOR_GREEN}{eval_config['end_date']}{COLOR_RESET}")
-            print(f"Portfolio Value:  {COLOR_YELLOW}{info['portfolio_value']}{COLOR_RESET}")
-            print(f"Traded using trained policy until {COLOR_CYAN}{config['end_date']}{COLOR_RESET}")
-
-            obs, info = env.reset()
-            episode += 1
-            episode_reward = 0.0
-
-    algo.stop()
-
-
-
-
-
+    
+    eval_portfolio_value = evaluate(config=eval_config, 
+                                    checkpoint_dir=checkpoint_dir)
+    
     ray.shutdown()
     wandb.finish()

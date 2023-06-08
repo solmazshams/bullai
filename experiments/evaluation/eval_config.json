@@ -1,13 +1,13 @@
 {
-    "symbols" : ["TQQQ", "SOXL", "FNGU"],
-    "start_date" : "2023-01-01",
-    "end_date" : "2023-06-06",
+    "symbols" : ["TQQQ", "SOXL"],
+    "start_date" : "2022-01-01",
+    "end_date" : "2023-06-07",
     "gamma" : 0.99,
     "lr" : 5e-4,
     "num_iterations" : 10000,
     "minibatch_size" : 2048,
     "batch_size" : 32768,
-    "initial_balance" : 10000,
+    "init_balance" : 10000,
     "batch_mode" : "complete_episode",
     "num_workers" : 4
 }

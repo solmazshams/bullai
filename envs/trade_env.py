@@ -49,7 +49,7 @@ class TradeEnv(gym.Env):
 
     Attributes:
         symbols (list): List of ticker symbols for the stocks.
-        initial_balance (float): Initial balance for the trading environment.
+        init_balance (float): Initial balance for the trading environment.
         start_date (str): Start date in 'YYYY-MM-DD' format for fetching historical data.
         end_date (str): End date in 'YYYY-MM-DD' format for fetching historical data.
         action (list): List to store actions taken in the environment.
@@ -57,11 +57,11 @@ class TradeEnv(gym.Env):
     """
 
     def __init__(self, config):
-        self.symbols = config.get("symbols", ["TQQQ", "SOXL"])
+        self.symbols = config["symbols"]
 
-        self.init_balance = config.get("init_balance", 10000)
-        self.start_date = config.get("start_date", "2016-01-01")
-        self.end_date = config.get("end_date", " 2023-01-01")
+        self.init_balance = config["init_balance"]
+        self.start_date = config["start_date"]
+        self.end_date = config["end_date"]
         self.action = []
         self.stocks = {}
 
@@ -162,5 +162,5 @@ class TradeEnv(gym.Env):
             "sharpe_ratio": 1,
             "portfolio_value": self.portfolio_value,
             "portions": self.action,
-            "all_portions": np.sum(self.action)
+            "stocks": np.sum(self.action)
         }
