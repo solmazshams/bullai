@@ -144,16 +144,21 @@ class TradeEnv(gym.Env):
         self.portfolio_value = max(self.portfolio_value, 0)
 
     def _get_obs(self):
-        obs = []
-        # obs.extend(self.action[:])
-        for i, symbol in enumerate(self.symbols):
-            obs.append(self.action[i])
-        obs.append(self.action[len(self.symbols)])
-
+        obs = [self.portfolio_value]
         for symbol in self.symbols:
-            obs.append(self.stocks[symbol].data["rsi"][self.time_idx])
-            obs.append(self.stocks[symbol].data["adx"][self.time_idx])
-            obs.append(self.stocks[symbol].data["macd"][self.time_idx])
+            for time_idx in range(self.time_idx-5, self.time_idx + 1):
+                if time_idx >= 0:
+                    obs.append(self.stocks[symbol].data["Open"][time_idx])
+                    obs.append(self.stocks[symbol].data["Close"][time_idx])
+                    obs.append(self.stocks[symbol].data["High"][time_idx])
+                    obs.append(self.stocks[symbol].data["Low"][time_idx])
+                    obs.append(self.stocks[symbol].data["Volume"][time_idx])
+                    obs.append(self.stocks[symbol].data["rsi"][self.time_idx])
+                    obs.append(self.stocks[symbol].data["adx"][self.time_idx])
+                    obs.append(self.stocks[symbol].data["macd"][self.time_idx])
+                else:
+                    obs.extend([0, 0, 0, 0, 0, 0, 0, 0])
+
         return obs
 
     def _get_info(self):

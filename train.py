@@ -67,7 +67,7 @@ if __name__ == "__main__":
         if i % 5 == 0:
             checkpoint_dir = algo.save()
             print(f"Checkpoint saved in directory {checkpoint_dir}")
-            eval_results = evaluate(eval_config=eval_config, 
+            eval_results = evaluate(eval_config=eval_config,
                                     checkpoint_dir=checkpoint_dir)
             wandb.log({"eval_portfolio_value" : eval_results}, step = i)
 
@@ -75,9 +75,9 @@ if __name__ == "__main__":
     # Get the last checkpoint from the above training run.
     # checkpoint = result.get_best_result().checkpoint
     # Create new Algorithm and restore its state from the last checkpoint.
-    
-    eval_portfolio_value = evaluate(eval_config=eval_config, 
+
+    eval_portfolio_value = evaluate(eval_config=eval_config,
                                     checkpoint_dir=checkpoint_dir)
-    
+
     ray.shutdown()
     wandb.finish()
