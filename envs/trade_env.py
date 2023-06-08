@@ -58,8 +58,7 @@ class TradeEnv(gym.Env):
 
     def __init__(self, config):
         self.symbols = config["symbols"]
-
-        self.init_balance = config["init_balance"]
+        self.init_balance = config["initial_balance"]
         self.start_date = config["start_date"]
         self.end_date = config["end_date"]
         self.action = []

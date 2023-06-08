@@ -56,18 +56,19 @@ if __name__ == "__main__":
         .rollouts(num_rollout_workers=config["num_workers"])
         .resources(num_gpus=0)
         .environment(env=TradeEnv, env_config = config)
-        .evaluation(evaluation_config=eval_config, evaluation_interval=2)
     )
 
     algo = trainer_config.build()
     for i in range(config["num_iterations"]):
         result = algo.train()
         print(pretty_print(result))
+        wandb.log(result["custom_metrics"], step = i)
 
         if i % 5 == 0:
             checkpoint_dir = algo.save()
             print(f"Checkpoint saved in directory {checkpoint_dir}")
-            eval_results = evaluate(checkpoint_dir)
+            eval_results = evaluate(eval_config=eval_config, 
+                                    checkpoint_dir=checkpoint_dir)
             wandb.log({"eval_portfolio_value" : eval_results}, step = i)
 
     print("Training completed. Restoring new Trainer for action inference.")
@@ -75,7 +76,7 @@ if __name__ == "__main__":
     # checkpoint = result.get_best_result().checkpoint
     # Create new Algorithm and restore its state from the last checkpoint.
     
-    eval_portfolio_value = evaluate(config=eval_config, 
+    eval_portfolio_value = evaluate(eval_config=eval_config, 
                                     checkpoint_dir=checkpoint_dir)
     
     ray.shutdown()
