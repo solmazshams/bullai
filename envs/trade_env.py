@@ -30,12 +30,12 @@ class Stock:
         long_window = 28
         short_window = 14
         self.data["rsi_short"] = momentum.rsi(
-            self.data["Close"], 
+            self.data["Close"],
             window=short_window,
             fillna=False)
 
         self.data["rsi_long"] = momentum.rsi(
-            self.data["Close"], 
+            self.data["Close"],
             window=long_window,
             fillna=False)
 
@@ -54,36 +54,36 @@ class Stock:
             fillna=False)
 
         self.data["roc_short"] = momentum.roc(
-            self.data["Close"], 
+            self.data["Close"],
             window=short_window,
             fillna=False)
 
         self.data["roc_long"] = momentum.roc(
-            self.data["Close"], 
+            self.data["Close"],
             window=long_window,
             fillna=False)
 
         self.data["adx_short"] = trend.ADXIndicator(
-            self.data["High"], 
-            self.data["Low"], 
-            self.data["Close"], 
-            window=short_window, 
+            self.data["High"],
+            self.data["Low"],
+            self.data["Close"],
+            window=short_window,
             fillna=False
         ).adx()
 
         self.data["adx_long"] = trend.ADXIndicator(
-            self.data["High"], 
-            self.data["Low"], 
-            self.data["Close"], 
-            window=long_window, 
+            self.data["High"],
+            self.data["Low"],
+            self.data["Close"],
+            window=long_window,
             fillna=False
         ).adx()
 
         self.data["adx"] = trend.ADXIndicator(
-            self.data["High"], 
-            self.data["Low"], 
-            self.data["Close"], 
-            window=20, 
+            self.data["High"],
+            self.data["Low"],
+            self.data["Close"],
+            window=20,
             fillna=False
         ).adx()
 
@@ -94,6 +94,8 @@ class Stock:
             window_sign=9,
             fillna=False,
         ).macd()
+        self.data['SMA_Short'] = self.data['Close'].rolling(window=short_window).mean()
+        self.data['LMA_Long'] = self.data['Close'].rolling(window=long_window).mean()
 
         self.data.fillna(0, inplace=True)
 
@@ -132,7 +134,7 @@ class TradeEnv(gym.Env):
         self.time_idx = 0
         self.episode_length = len(self.stocks[config["symbols"][0]].data)
         self.num_symbols = len(self.symbols)
-        self.num_states = 27 * self.num_symbols
+        self.num_states = 12 * self.num_symbols
         self.num_actions = self.num_symbols + 1
 
         self.action_space = Box(0.0, 1.0, shape=(self.num_actions,), dtype=np.float32)
@@ -212,12 +214,13 @@ class TradeEnv(gym.Env):
         obs = []
         # obs.append(self.portfolio_value)
         for symbol in self.symbols:
-            for time_id in range(self.time_idx - 2, self.time_idx + 1):
-                for col in ['rsi_short', 'rsi_long', 
+            for time_id in range(self.time_idx-1, self.time_idx + 1):
+                for col in ['rsi_short', 'rsi_long',
                             'cci_short', 'cci_long',
-                            'roc_short', 'roc_long', 
-                            'adx_short', 'adx_long', 
-                            'macd']:
+                            'roc_short', 'roc_long',
+                            'adx_short', 'adx_long',
+                            'SMA_short', 'SMA_long',
+                            'macd', 'Close']:
                     if time_id >= 0:
                         obs.append(self.stocks[symbol].data[col][time_id])
                     else:

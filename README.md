@@ -1,7 +1,8 @@
 # BULL-AI
 
 ## Installation
-
+`pip install ta yfinance wandb`
+`pip install -U "ray[rllib]" tensorflow torch`
 ## Training
 
 `python train.py`
@@ -15,4 +16,4 @@ Also we have logged the results into `wandb` to view the reports.
 ## Upcoming
 - optimize the observations
 - enable high-res trading strategies
-- 
+-

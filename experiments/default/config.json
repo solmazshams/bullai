@@ -1,5 +1,5 @@
 {
-    "symbols" : ["AAPL", "TSLA", "AMZN", "NVDA", "BAC", "AMD", "INTC", "META", "MSFT", "GOOGL", "NFLX", "BA", "XOM", "QCOM", "BA", "AVGO"], 
+    "symbols" : ["AAPL", "TSLA", "AMZN", "NVDA", "BAC", "AMD", "INTC", "META", "MSFT", "GOOGL", "NFLX", "BA", "XOM", "QCOM", "BA", "AVGO"],
     "start_date" : "2018-01-01",
     "end_date" : "2021-12-31",
     "gamma" : 0.99,
@@ -9,5 +9,5 @@
     "batch_size" : 65536,
     "initial_balance" : 10000,
     "batch_mode" : "complete_episode",
-    "num_workers" : 10
+    "num_workers" : 4
 }
