@@ -49,7 +49,8 @@ if __name__ == "__main__":
             train_batch_size = config["batch_size"],
             sgd_minibatch_size = config["minibatch_size"],
             model = {
-                "fcnet_hiddens": [64, 64],
+                "fcnet_hiddens": [32, 32],
+                "fcnet_activation" : "relu"
             },
         )
         .callbacks(TradeCallbacks)

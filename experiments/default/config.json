@@ -1,5 +1,5 @@
 {
-    "symbols" : ["TQQQ", "SOXL"],
+    "symbols" : ["TQQQ"],
     "start_date" : "2018-01-01",
     "end_date" : "2021-12-31",
     "gamma" : 0.99,

@@ -6,6 +6,7 @@
 
 import yfinance as yf
 from ta import trend, momentum
+import ta
 import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Box
@@ -25,11 +26,64 @@ class Stock:
         self.data = yf.download(
             symbol, start=start_date, end=end_date
         )  # load data of symbol
+        long_window = 28
+        short_window = 14
+        self.data["rsi_short"] = momentum.rsi(
+            self.data["Close"], 
+            window=short_window,
+            fillna=False)
 
-        self.data["rsi"] = momentum.rsi(self.data["Close"], 14, False)
+        self.data["rsi_long"] = momentum.rsi(
+            self.data["Close"], 
+            window=long_window,
+            fillna=False)
+
+        self.data["cci_short"] = trend.cci(
+            self.data["High"],
+            self.data["Low"],
+            self.data["Close"],
+            window=short_window,
+            fillna=False)
+
+        self.data["cci_long"] = trend.cci(
+            self.data["High"],
+            self.data["Low"],
+            self.data["Close"],
+            window=long_window,
+            fillna=False)
+
+        self.data["roc_short"] = momentum.roc(
+            self.data["Close"], 
+            window=short_window,
+            fillna=False)
+
+        self.data["roc_long"] = momentum.roc(
+            self.data["Close"], 
+            window=long_window,
+            fillna=False)
+
+        self.data["adx_short"] = trend.ADXIndicator(
+            self.data["High"], 
+            self.data["Low"], 
+            self.data["Close"], 
+            window=short_window, 
+            fillna=False
+        ).adx()
+
+        self.data["adx_long"] = trend.ADXIndicator(
+            self.data["High"], 
+            self.data["Low"], 
+            self.data["Close"], 
+            window=long_window, 
+            fillna=False
+        ).adx()
 
         self.data["adx"] = trend.ADXIndicator(
-            self.data["High"], self.data["Low"], self.data["Close"], 20, False
+            self.data["High"], 
+            self.data["Low"], 
+            self.data["Close"], 
+            window=20, 
+            fillna=False
         ).adx()
 
         self.data["macd"] = trend.MACD(
@@ -72,7 +126,7 @@ class TradeEnv(gym.Env):
         self.time_idx = 0
         self.episode_length = len(self.stocks[self.symbols[0]].data)
         self.num_symbols = len(self.symbols)
-        self.num_states = 4 * self.num_symbols + 1
+        self.num_states = 27 * self.num_symbols
         self.num_actions = self.num_symbols + 1
 
         self.action_space = Box(0.0, 1.0, shape=(self.num_actions,), dtype=np.float32)
@@ -144,21 +198,19 @@ class TradeEnv(gym.Env):
         self.portfolio_value = max(self.portfolio_value, 0)
 
     def _get_obs(self):
-        obs = [self.portfolio_value]
+        obs = []
+        # obs.append(self.portfolio_value)
         for symbol in self.symbols:
-            for time_idx in range(self.time_idx-5, self.time_idx + 1):
-                if time_idx >= 0:
-                    obs.append(self.stocks[symbol].data["Open"][time_idx])
-                    obs.append(self.stocks[symbol].data["Close"][time_idx])
-                    obs.append(self.stocks[symbol].data["High"][time_idx])
-                    obs.append(self.stocks[symbol].data["Low"][time_idx])
-                    obs.append(self.stocks[symbol].data["Volume"][time_idx])
-                    obs.append(self.stocks[symbol].data["rsi"][self.time_idx])
-                    obs.append(self.stocks[symbol].data["adx"][self.time_idx])
-                    obs.append(self.stocks[symbol].data["macd"][self.time_idx])
-                else:
-                    obs.extend([0, 0, 0, 0, 0, 0, 0, 0])
-
+            for time_id in range(self.time_idx - 2, self.time_idx + 1):
+                for col in ['rsi_short', 'rsi_long', 
+                            'cci_short', 'cci_long',
+                            'roc_short', 'roc_long', 
+                            'adx_short', 'adx_long', 
+                            'macd']:
+                    if time_id >= 0:
+                        obs.append(self.stocks[symbol].data[col][time_id])
+                    else:
+                        obs.append(0)
         return obs
 
     def _get_info(self):
