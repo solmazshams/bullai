@@ -1,13 +1,13 @@
 {
-    "symbols" : ["TQQQ"],
+    "symbols" : ["AAPL", "TSLA", "AMZN", "NVDA", "BAC", "AMD", "INTC", "META", "MSFT", "GOOGL", "NFLX", "BA", "XOM", "QCOM", "BA", "AVGO"], 
     "start_date" : "2018-01-01",
     "end_date" : "2021-12-31",
     "gamma" : 0.99,
     "lr" : 5e-4,
     "num_iterations" : 10000,
-    "minibatch_size" : 2048,
-    "batch_size" : 32768,
+    "minibatch_size" : 4096,
+    "batch_size" : 65536,
     "initial_balance" : 10000,
     "batch_mode" : "complete_episode",
-    "num_workers" : 4
+    "num_workers" : 10
 }

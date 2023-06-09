@@ -10,7 +10,8 @@ import ta
 import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Box
-
+import random
+import pandas as pd
 class Stock:
     """ StockData class """
     def __init__(self, symbol, start_date, end_date):
@@ -111,20 +112,25 @@ class TradeEnv(gym.Env):
     """
 
     def __init__(self, config):
-        self.symbols = config["symbols"]
+        self.config = config
+        self.symbols = [random.choice(config['symbols'])]
         self.init_balance = config["initial_balance"]
         self.start_date = config["start_date"]
         self.end_date = config["end_date"]
         self.action = []
         self.stocks = {}
 
-        for symbol in self.symbols:
-            self.stocks[symbol] = Stock(
-                symbol=symbol, start_date=self.start_date, end_date=self.end_date
-            )
-
+        for symbol in config['symbols']:
+            try:
+                self.stocks[symbol] = Stock(
+                    symbol=symbol, start_date=self.start_date, end_date=self.end_date
+                )
+            except:
+                print('\033[91m Could not load %s from yfinance successfully\033[0m'%symbol)
+                if symbol in self.stocks:
+                    del self.stocks[symbol]
         self.time_idx = 0
-        self.episode_length = len(self.stocks[self.symbols[0]].data)
+        self.episode_length = len(self.stocks[config["symbols"][0]].data)
         self.num_symbols = len(self.symbols)
         self.num_states = 27 * self.num_symbols
         self.num_actions = self.num_symbols + 1
@@ -141,7 +147,12 @@ class TradeEnv(gym.Env):
         """
         Resets the environment to an initial internal state, returning an initial observation and info.
         """
-
+        self.symbols = [random.choice(self.config["symbols"])]
+        # self.stocks = {}
+        # for symbol in self.symbols:
+        #     self.stocks[symbol] = Stock(
+        #         symbol=symbol, start_date=self.start_date, end_date=self.end_date
+        #     )
         self.portfolio = {key: 0 for key in self.symbols}
         self.portfolio["balance"] = self.init_balance
         self.portfolio_value = self.init_balance
@@ -218,5 +229,5 @@ class TradeEnv(gym.Env):
             "sharpe_ratio": 1,
             "portfolio_value": self.portfolio_value,
             "portions": self.action,
-            "stocks": np.sum(self.action)
+            "symbols": self.symbols
         }
