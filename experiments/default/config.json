@@ -1,13 +1,20 @@
 {
-    "symbols" : ["AAPL", "TSLA", "AMZN", "NVDA", "BAC", "AMD", "INTC", "META", "MSFT", "GOOGL", "NFLX", "BA", "XOM", "QCOM", "BA", "AVGO"], 
-    "start_date" : "2018-01-01",
-    "end_date" : "2021-12-31",
+    "symbols" : ["SPY", "QQQ", "AAPL", "TSLA", "AMZN", "NVDA", "BAC", "AMD", "INTC", "META", "MSFT", "GOOGL", "NFLX", "BA", "QCOM", "BA", "AVGO"], 
+    "start_date" : "2018-06-01",
+    "end_date" : "2021-06-01",
     "gamma" : 0.99,
     "lr" : 5e-4,
     "num_iterations" : 10000,
-    "minibatch_size" : 4096,
-    "batch_size" : 65536,
+    "minibatch_size" : 256,
+    "batch_size" : 4096,
     "initial_balance" : 10000,
     "batch_mode" : "complete_episode",
-    "num_workers" : 10
+    "num_workers" : 4,
+    "obs_components" : ["rsi_short", "rsi_long", 
+            "cci_short", "cci_long",
+            "roc_short", "roc_long", 
+            "adx_short", "adx_long", 
+            "mfi", "wma_short", "wma_long", 
+            "macd", "Close"],
+    "obs_interval" : 2
 }

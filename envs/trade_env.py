@@ -5,7 +5,7 @@
 """
 
 import yfinance as yf
-from ta import trend, momentum
+from ta import trend, momentum, volatility, volume
 import ta
 import numpy as np
 import gymnasium as gym
@@ -25,8 +25,7 @@ class Stock:
         """
         self.symbol = symbol
         self.data = yf.download(
-            symbol, start=start_date, end=end_date
-        )  # load data of symbol
+            symbol, start=start_date, end=end_date)  # load data of symbol
         long_window = 28
         short_window = 14
         self.data["rsi_short"] = momentum.rsi(
@@ -94,8 +93,59 @@ class Stock:
             window_sign=9,
             fillna=False,
         ).macd()
+        
+        self.data["wma_short"] = trend.wma_indicator(
+            self.data["Close"],
+            window = short_window,
+            fillna = False
+        )
 
-        self.data.fillna(0, inplace=True)
+        self.data["wma_long"] = trend.wma_indicator(
+            self.data["Close"],
+            window = long_window,
+            fillna = False
+        )
+        
+        self.data["bollinger"] = volatility.bollinger_hband(
+            self.data["Close"], 
+            window = short_window, 
+            window_dev = 2,
+            fillna = False
+        )
+        
+        self.data["donchian"] = volatility.donchian_channel_wband(
+            self.data["High"],
+            self.data["Low"],
+            self.data["Close"], 
+            window = short_window, 
+            offset = 0,
+            fillna = False
+        )
+        
+        self.data["ulcer"] = volatility.ulcer_index(
+            self.data["Close"],
+            window = short_window,
+            fillna = False            
+        )
+
+        self.data["ease_of_movement"] = volume.ease_of_movement(
+            self.data["High"], 
+            self.data["Low"],
+            self.data["Volume"],
+            window = short_window, 
+            fillna = False
+        )
+        
+        self.data["mfi"] = volume.money_flow_index(
+            self.data["High"], 
+            self.data["Low"],
+            self.data["Close"],
+            self.data["Volume"],
+            window = short_window, 
+            fillna = False
+        )
+        
+        self.data.fillna(-1, inplace=True)
 
 
 class TradeEnv(gym.Env):
@@ -113,6 +163,8 @@ class TradeEnv(gym.Env):
 
     def __init__(self, config):
         self.config = config
+        self.obs_components = config["obs_components"]
+        self.obs_interval = config["obs_interval"]
         self.symbols = [random.choice(config['symbols'])]
         self.init_balance = config["initial_balance"]
         self.start_date = config["start_date"]
@@ -132,7 +184,7 @@ class TradeEnv(gym.Env):
         self.time_idx = 0
         self.episode_length = len(self.stocks[config["symbols"][0]].data)
         self.num_symbols = len(self.symbols)
-        self.num_states = 27 * self.num_symbols
+        self.num_states = 2 + (2 + len(self.obs_components) * self.obs_interval) * self.num_symbols
         self.num_actions = self.num_symbols + 1
 
         self.action_space = Box(0.0, 1.0, shape=(self.num_actions,), dtype=np.float32)
@@ -159,7 +211,8 @@ class TradeEnv(gym.Env):
         self.prev_portfolio_value = self.init_balance
         self.time_idx = 0
         self.action = [0 for _ in range(len(self.symbols))] + [1]
-
+        self.prev_action = [[0 for _ in range(len(self.symbols))] + [1], 
+                            [0 for _ in range(len(self.symbols))] + [1]]
         info = self._get_info()
         observation = self._get_obs()
 
@@ -193,7 +246,8 @@ class TradeEnv(gym.Env):
         info = self._get_info()
 
         done = truncated = self.time_idx == self.episode_length - 1
-
+        self.prev_action.append(self.action)
+        self.prev_action.pop(0)
         return obs, reward, done, truncated, info
 
     def render(self):
@@ -212,16 +266,18 @@ class TradeEnv(gym.Env):
         obs = []
         # obs.append(self.portfolio_value)
         for symbol in self.symbols:
-            for time_id in range(self.time_idx - 2, self.time_idx + 1):
-                for col in ['rsi_short', 'rsi_long', 
-                            'cci_short', 'cci_long',
-                            'roc_short', 'roc_long', 
-                            'adx_short', 'adx_long', 
-                            'macd']:
+            for time_id in range(self.time_idx - self.obs_interval + 1, self.time_idx + 1):
+                for col in self.obs_components:
                     if time_id >= 0:
-                        obs.append(self.stocks[symbol].data[col][time_id])
+                        if col in ["wma_short", "wma_long", "Close"]:
+                            scale = 1/self.stocks[symbol].data["wma_long"][self.time_idx]
+                        else:
+                            scale = 1
+                        obs.append(scale * self.stocks[symbol].data[col][time_id])
                     else:
-                        obs.append(0)
+                        obs.append(-1)
+        obs.extend(self.prev_action[0])
+        obs.extend(self.prev_action[1])
         return obs
 
     def _get_info(self):

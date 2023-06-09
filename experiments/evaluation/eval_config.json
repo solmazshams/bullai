@@ -1,7 +1,7 @@
 {
     "symbols" : ["SPY"],
-    "start_date" : "2022-01-01",
-    "end_date" : "2023-06-07",
+    "start_date" : "2021-06-01",
+    "end_date" : "2023-06-01",
     "gamma" : 0.99,
     "lr" : 5e-4,
     "num_iterations" : 10000,
@@ -9,5 +9,12 @@
     "batch_size" : 32768,
     "initial_balance" : 10000,
     "batch_mode" : "complete_episode",
-    "num_workers" : 4
+    "num_workers" : 4,
+    "obs_components" : ["rsi_short", "rsi_long", 
+    "cci_short", "cci_long",
+    "roc_short", "roc_long", 
+    "adx_short", "adx_long", 
+    "mfi", "wma_short", "wma_long", 
+    "macd", "Close"],
+    "obs_interval" : 2
 }
