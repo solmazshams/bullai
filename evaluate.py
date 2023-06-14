@@ -9,7 +9,7 @@ with open("./experiments/evaluation/eval_config.json", "r", encoding='utf-8') as
 # with open("./experiments/default/config.json", "r", encoding='utf-8') as f:
     eval_config = load(f)
 
-checkpoint_dir = 'C:/Users/Solmaz/ray_results/PPO_TradeEnv_2023-06-07_23-33-54_dzg25dc/checkpoint_000091/'
+checkpoint_dir = None
 
 
 def evaluate(eval_config=eval_config, 

@@ -1,20 +1,36 @@
 {
-    "symbols" : ["SPY"],
+    "symbols" : [
+        "SPY", "QQQ", "AAPL", "TSLA", "AMZN", "NVDA", "BAC",
+        "AMD", "INTC", "MSFT", "GOOGL", "NFLX", "BA", "EA", 
+        "QCOM", "BA", "DIS", "KO", "VZ", "QCOM", "C", "CMCSA", 
+        "JNJ", "SBUX", "KO", "NKE", "COST" , "CSCO", "XOM", "T",  
+        "JPM", "WMT", "AMGN", "F", "HON", "ILMN", "INTU" ,
+         "LVS"  , "ADBE", "VTI", "SOXL" 
+    ], 
     "start_date" : "2021-06-01",
     "end_date" : "2023-06-01",
-    "gamma" : 0.99,
+    "gamma" : 0.9,
     "lr" : 5e-4,
     "num_iterations" : 10000,
-    "minibatch_size" : 2048,
-    "batch_size" : 32768,
+    "minibatch_size" : 1024,
+    "batch_size" : 8192,
     "initial_balance" : 10000,
     "batch_mode" : "complete_episode",
-    "num_workers" : 4,
-    "obs_components" : ["rsi_short", "rsi_long", 
-    "cci_short", "cci_long",
+    "num_workers" : 1,
+    "obs_components" : [
+        "rsi_short", 
+        "cci_short",  
+        "mfi", 
+        "wma_short", 
+        "macd", 
+        "Close", 
+        "Open", 
+        "High", 
+        "Low"
+        ],
+    "other_components" : ["rsi_short", "rsi_long", "cci_long",
     "roc_short", "roc_long", 
-    "adx_short", "adx_long", 
-    "mfi", "wma_short", "wma_long", 
-    "macd", "Close"],
-    "obs_interval" : 2
+    "adx_short", "adx_long", "wma_long"],
+    "obs_interval" : 3,
+    "action_type" : "buy_sell_hold"
 }
