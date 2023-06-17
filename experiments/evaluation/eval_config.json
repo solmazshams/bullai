@@ -1,26 +1,27 @@
 {
     "symbols" : [
-        "SPY", "QQQ"
+        "QQQ"
     ],
     "start_date" : "2021-06-01",
     "end_date" : "2023-06-01",
     "gamma" : 0.9,
     "lr" : 5e-4,
     "num_iterations" : 10000,
-    "minibatch_size" : 1024,
-    "batch_size" : 8192,
+    "minibatch_size" : 16384,
+    "batch_size" : 65536,
     "initial_balance" : 10000,
     "batch_mode" : "complete_episode",
     "num_workers" : 1,
     "obs_components" : [
-        "rsi_short","rsi_long",
-        "cci_short","cci_long",
-        "roc_short", "roc_long",
+        "rsi_long",
+        "cci_long",
+        "roc_long",
         "adx",
         "Close",
+        "Open",
         "High",
         "Low",
-        "Open",
+        "wma_short",
         "macd",
         "mfi"
         ],
@@ -32,6 +33,6 @@
         "High",
         "Low",        "wma_short",
         "adx_short", "adx_long", "wma_long"],
-    "obs_interval" : 5,
+    "obs_interval" : 2,
     "action_type" : "buy_sell_hold"
 }

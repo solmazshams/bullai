@@ -72,9 +72,11 @@ class TradeEnv(gym.Env):
         """
         self.symbols = [random.choice(self.config["symbols"])]
         data_length = len(self.stocks[self.symbols[0]].data)
-        self.min_episode_length = 200
-        self.episode_length = np.random.randint(self.min_episode_length, min(500, data_length))
-        self.start_idx = np.random.randint(0, data_length - self.episode_length)
+        # self.min_episode_length = 200
+        # self.episode_length = np.random.randint(self.min_episode_length, min(500, data_length))
+        # self.start_idx = np.random.randint(0, data_length - self.episode_length)
+        self.episode_length = data_length
+        self.start_idx = 0
         self.df = self.stocks[self.symbols[0]].data.iloc[self.start_idx:self.start_idx+self.episode_length]
         self.portfolio = {key: 0 for key in self.symbols}
         self.portfolio["balance"] = self.init_balance
@@ -107,7 +109,7 @@ class TradeEnv(gym.Env):
                 # buy
                 for symbol in self.symbols:
                     if self.portfolio[symbol] > 0:
-                        reward -= 1
+                        reward -= 0.1
                     self.portfolio[symbol] = (
                         self.portfolio_value
                         /self.df["Close"][self.time_idx]
@@ -120,7 +122,7 @@ class TradeEnv(gym.Env):
 
                 for symbol in self.symbols:
                     if self.portfolio[symbol] == 0:
-                        reward -= 1
+                        reward -= 0.1
                     self.portfolio[symbol] = 0
                 self.portfolio["balance"] = self.portfolio_value
 
