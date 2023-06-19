@@ -44,7 +44,7 @@ if __name__ == "__main__":
             train_batch_size = config["batch_size"],
             sgd_minibatch_size = config["minibatch_size"],
             model = {
-                "fcnet_hiddens": [4, 32, 32],
+                "fcnet_hiddens": [4, 16, 16],
                 "fcnet_activation": "tanh",
             },
         )
@@ -57,15 +57,20 @@ if __name__ == "__main__":
     algo = trainer_config.build()
     for i in range(config["num_iterations"]):
         result = algo.train()
-        print("iteration")
+        print(f"\033[4miteration = {i}\033[0m")
         print(pretty_print(result))
         wandb.log(result["custom_metrics"], step = i)
-        wandb.log({"episode_reward_mean" : result["episode_reward_mean"]}, step = i)
+        wandb.log({"episode_reward_mean" : result["episode_reward_mean"],
+                   "policy_loss" : result["info"]["learner"]["default_policy"]["learner_stats"]["policy_loss"],
+                   "vf_loss" : result["info"]["learner"]["default_policy"]["learner_stats"]["vf_loss"],
+                   "total_loss" : result["info"]["learner"]["default_policy"]["learner_stats"]["total_loss"]
+                   }
+                  , step = i)
 
         if i % 5 == 0:
             checkpoint_dir = algo.save()
             print(f"Checkpoint saved in directory {checkpoint_dir}")
-            eval_results= evaluate(eval_config=eval_config,
+            eval_results= evaluate(eval_env=eval_env,
                                     checkpoint_dir=checkpoint_dir,
                                     render = True,
                                     iteration = i)

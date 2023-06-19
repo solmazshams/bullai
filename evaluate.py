@@ -17,12 +17,12 @@ with open("./experiments/evaluation/eval_config.json", "r", encoding='utf-8') as
 # with open("./experiments/default/config.json", "r", encoding='utf-8') as f:
     eval_config = load(f)
 
-def evaluate(eval_config = eval_config,
+def evaluate(eval_env,
              checkpoint_dir=None,
              render = True,
              iteration = 0):
 
-    eval_env = TradeEnv(config = eval_config)
+    
     obs, info = eval_env.reset()
     done = False
     episode_reward = 0.0
@@ -63,7 +63,7 @@ def evaluate(eval_config = eval_config,
     if render:
         default_investment = eval_env.df['Close']/eval_env.df['Close'][0]  * eval_config["initial_balance"]
 
-        plt.figure(figsize=(10, 10), dpi = 300)
+        plt.figure(figsize=(10, 5), dpi = 300)
         ax1 = plt.subplot2grid((5, 1), (0, 0), rowspan=3, colspan=1)
         ax2 = plt.subplot2grid((5, 1), (3, 0), rowspan=2, colspan=1, sharex=ax1)
 
@@ -78,21 +78,24 @@ def evaluate(eval_config = eval_config,
                         where = np.array(all_portfolio_values) < eval_config["initial_balance"],
                 facecolor='orangered', alpha=0.5)
         ax1.set_title(eval_env.symbols[0])
-        ax1.plot(df.index, all_portfolio_values, color = 'gray', linewidth = 0.5)
-        ax1.plot(df.index, default_investment, color = 'purple', linewidth = 1, linestyle = '--')
+        ax1.plot(df.index, all_portfolio_values, color = 'k', linewidth = 1)
+        ax1.fill_between(df.index, eval_config["initial_balance"], default_investment,
+                facecolor='yellow', alpha=0.25)
+        ax1.plot(df.index, default_investment,
+                color='gray', linewidth = 0.5)
         ax1.tick_params(axis='x', labelbottom=False)
-        ax1.grid(color = 'gray', linewidth = 0.5, alpha = 0.5)
+        ax1.grid(color = 'olive', linewidth = 0.5, alpha = 0.5)
         ax2.plot(df.index, df["Close"])
         ax2.tick_params(axis='x', labelbottom=False)
         for signal in buy_signals:
             ax2.arrow(
                 df.index[signal], df["Close"][signal]*0.9, 0, df["Close"][signal]*0.025,
-            width=2, color='green', alpha = 0.25, linewidth=0)
+            width=4, color='green', alpha = 0.25, linewidth=0)
 
         for signal in sell_signals:
             ax2.arrow(
                 df.index[signal], df["Close"][signal]*1.1, 0, -df["Close"][signal]*0.025,
-            width=2, color='red', alpha = 0.25, linewidth=0)
+            width=4, color='red', alpha = 0.25, linewidth=0)
         ax2.grid(color = 'gray', linewidth = 0.5, alpha = 0.5)
         plt.savefig(f"plots/portfolio_value_{iteration}.png", dpi=300)
         plt.close('all')
