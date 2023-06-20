@@ -3,8 +3,6 @@ from json import load
 from ray.rllib.algorithms.algorithm import Algorithm
 import matplotlib.pyplot as plt
 import numpy as np
-import mplfinance as mpf
-import pandas as pd
 
 COLOR_BLUE = "\033[34m"
 COLOR_GREEN = "\033[32m"
@@ -85,10 +83,9 @@ def evaluate(eval_env,
         ax1.tick_params(axis='x', labelbottom=False)
         ax1.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
         ax2.plot(df.index, df["Close"], linewidth = 0.5, color = 'black')
-        ax2.plot(df.index, df["wma_short"], color = 'pink', linewidth = 1, alpha = 0.5)
-        ax2.plot(df.index, df["wma_long"], color = 'purple', linewidth = 1, alpha = 0.5)
+        ax2.plot(df.index, df["wma_short"], color = 'pink', linewidth = 2, alpha = 0.25, zorder = -1)
+        ax2.plot(df.index, df["wma_long"], color = 'purple', linewidth = 2, alpha = 0.25, zorder = -1)
 
-        ax2.tick_params(axis='x', labelbottom=False)
         for signal in buy_signals:
             ax2.scatter(df.index[signal], df["Close"][signal]*0.9, marker = '^', color='forestgreen', alpha = 0.25)
 
@@ -96,6 +93,7 @@ def evaluate(eval_env,
             ax2.scatter(df.index[signal], df["Close"][signal]*1.1, marker = 'v', color='indianred', alpha = 0.25)
 
         ax2.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
+        plt.tight_layout()
         plt.savefig(f"plots/portfolio_value_{iteration}.png", dpi=300)
         plt.close('all')
 

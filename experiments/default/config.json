@@ -34,6 +34,6 @@
         "Low",
         "wma_short",
         "adx_short", "adx_long", "mfi"],
-    "obs_interval" : 2,
+    "obs_interval" : 3,
     "action_type" : "buy_sell_hold"
 }

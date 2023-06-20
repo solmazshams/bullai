@@ -2,7 +2,7 @@
     "symbols" : [
         "QCOM"
     ],
-    "start_date" : "2021-06-01",
+    "start_date" : "2021-01-01",
     "end_date" : "2023-06-01",
     "gamma" : 0.9,
     "lr" : 5e-4,
@@ -33,6 +33,6 @@
         "High",
         "Low",        "wma_short",
         "adx_short", "adx_long", "wma_long"],
-    "obs_interval" : 2,
+    "obs_interval" : 3,
     "action_type" : "buy_sell_hold"
 }
