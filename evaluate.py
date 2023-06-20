@@ -1,11 +1,10 @@
 from json import load
 
-from ray.rllib.algorithms.ppo.ppo import PPOConfig
 from ray.rllib.algorithms.algorithm import Algorithm
 import matplotlib.pyplot as plt
-from envs.trade_env import TradeEnv
 import numpy as np
-
+import mplfinance as mpf
+import pandas as pd
 
 COLOR_BLUE = "\033[34m"
 COLOR_GREEN = "\033[32m"
@@ -22,7 +21,7 @@ def evaluate(eval_env,
              render = True,
              iteration = 0):
 
-    
+
     obs, info = eval_env.reset()
     done = False
     episode_reward = 0.0
@@ -63,7 +62,7 @@ def evaluate(eval_env,
     if render:
         default_investment = eval_env.df['Close']/eval_env.df['Close'][0]  * eval_config["initial_balance"]
 
-        plt.figure(figsize=(10, 5), dpi = 300)
+        plt.figure(figsize=(12, 6), dpi = 300)
         ax1 = plt.subplot2grid((5, 1), (0, 0), rowspan=3, colspan=1)
         ax2 = plt.subplot2grid((5, 1), (3, 0), rowspan=2, colspan=1, sharex=ax1)
 
@@ -84,21 +83,21 @@ def evaluate(eval_env,
         ax1.plot(df.index, default_investment,
                 color='gray', linewidth = 0.5)
         ax1.tick_params(axis='x', labelbottom=False)
-        ax1.grid(color = 'olive', linewidth = 0.5, alpha = 0.5)
-        ax2.plot(df.index, df["Close"])
+        ax1.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
+        ax2.plot(df.index, df["Close"], linewidth = 0.5, color = 'black')
+        ax2.plot(df.index, df["wma_short"], color = 'pink', linewidth = 1, alpha = 0.5)
+        ax2.plot(df.index, df["wma_long"], color = 'purple', linewidth = 1, alpha = 0.5)
+
         ax2.tick_params(axis='x', labelbottom=False)
         for signal in buy_signals:
-            ax2.arrow(
-                df.index[signal], df["Close"][signal]*0.9, 0, df["Close"][signal]*0.025,
-            width=4, color='green', alpha = 0.25, linewidth=0)
+            ax2.scatter(df.index[signal], df["Close"][signal]*0.9, marker = '^', color='forestgreen', alpha = 0.25)
 
         for signal in sell_signals:
-            ax2.arrow(
-                df.index[signal], df["Close"][signal]*1.1, 0, -df["Close"][signal]*0.025,
-            width=4, color='red', alpha = 0.25, linewidth=0)
-        ax2.grid(color = 'gray', linewidth = 0.5, alpha = 0.5)
+            ax2.scatter(df.index[signal], df["Close"][signal]*1.1, marker = 'v', color='indianred', alpha = 0.25)
+
+        ax2.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
         plt.savefig(f"plots/portfolio_value_{iteration}.png", dpi=300)
         plt.close('all')
 
-    return {'portfolio_value' : info["portfolio_value"],
-            'episode_reward' : episode_reward}
+    return {'eval_portfolio_value' : info["portfolio_value"],
+            'eval_episode_reward' : episode_reward}

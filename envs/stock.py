@@ -136,4 +136,5 @@ class Stock:
             fillna = False
         )
 
+        self.data = self.data.iloc[200:]
         self.data.fillna(-1, inplace=True)
