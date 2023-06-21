@@ -73,24 +73,38 @@ def evaluate(eval_env,
             facecolor='forestgreen', alpha=0.5)
         ax1.fill_between(df.index, eval_config["initial_balance"], all_portfolio_values,
                         where = np.array(all_portfolio_values) < eval_config["initial_balance"],
-                facecolor='orangered', alpha=0.5)
+                facecolor='tomato', alpha=0.5)
         ax1.set_title(eval_env.symbols[0])
         ax1.plot(df.index, all_portfolio_values, color = 'k', linewidth = 1)
         ax1.fill_between(df.index, eval_config["initial_balance"], default_investment,
-                facecolor='yellow', alpha=0.25)
+                facecolor='silver', alpha=0.25)
         ax1.plot(df.index, default_investment,
                 color='gray', linewidth = 0.5)
         ax1.tick_params(axis='x', labelbottom=False)
         ax1.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
         ax2.plot(df.index, df["Close"], linewidth = 0.5, color = 'black')
-        ax2.plot(df.index, df["wma_short"], color = 'pink', linewidth = 2, alpha = 0.25, zorder = -1)
-        ax2.plot(df.index, df["wma_long"], color = 'purple', linewidth = 2, alpha = 0.25, zorder = -1)
+        ax2.plot(df.index, df["wma_short"], color = 'black', linestyle = '--',linewidth = 0.5, alpha = 0.25, zorder = -1)
+        ax2.plot(df.index, df["wma_long"], color = 'black', linewidth = 0.5, linestyle = '-.', alpha = 0.25, zorder = -1)
 
         for signal in buy_signals:
-            ax2.scatter(df.index[signal], df["Close"][signal]*0.9, marker = '^', color='forestgreen', alpha = 0.25)
+            ax2.scatter(
+                df.index[signal],
+                df["Close"][signal]*0.9,
+                marker = '^',
+                s = 40,
+                color='forestgreen',
+                alpha = 0.25,
+                linewidths = 0)
 
         for signal in sell_signals:
-            ax2.scatter(df.index[signal], df["Close"][signal]*1.1, marker = 'v', color='indianred', alpha = 0.25)
+            ax2.scatter(
+                df.index[signal],
+                df["Close"][signal]*1.1,
+                marker = 'v',
+                s = 40,
+                color='tomato',
+                alpha = 0.25,
+                linewidths = 0)
 
         ax2.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
         plt.tight_layout()

@@ -108,8 +108,8 @@ class TradeEnv(gym.Env):
             if action == 1:
                 # buy
                 for symbol in self.symbols:
-                    # if self.portfolio[symbol] > 0:
-                    #     reward -= 0.01
+                    if self.portfolio[symbol] > 0:
+                        reward -= 1/self.episode_length
                     self.portfolio[symbol] = (
                         self.portfolio_value
                         /self.df["Close"][self.time_idx]
@@ -121,8 +121,8 @@ class TradeEnv(gym.Env):
                 # sell
 
                 for symbol in self.symbols:
-                    # if self.portfolio[symbol] == 0:
-                    #     reward -= 0.01
+                    if self.portfolio[symbol] == 0:
+                        reward -= 1/self.episode_length
                     self.portfolio[symbol] = 0
                 self.portfolio["balance"] = self.portfolio_value
 
