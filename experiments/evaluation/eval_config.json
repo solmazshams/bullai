@@ -23,7 +23,11 @@
         "Low",
         "wma_short",
         "macd",
-        "mfi"
+        "mfi",
+        "obv",
+        "stoch_osc",
+        "bollinger_h",
+        "bollinger_l"
         ],
     "other_components" : [
         "rsi_short", "rsi_long", "cci_long",

@@ -1,7 +1,7 @@
 
 import yfinance as yf
 from ta import trend, momentum, volatility, volume
-
+from ta.volatility import BollingerBands
 
 class Stock:
     """ StockData class """
@@ -97,13 +97,16 @@ class Stock:
             fillna = False
         )
 
-        self.data["bollinger"] = volatility.bollinger_hband(
+        self.data["bollinger_h"] = volatility.bollinger_hband(
             self.data["Close"],
             window = short_window,
-            window_dev = 2,
             fillna = False
         )
-
+        self.data["bollinger_l"] = volatility.bollinger_lband(
+            self.data["Close"],
+            window = short_window,
+            fillna = False
+        )
         self.data["donchian"] = volatility.donchian_channel_wband(
             self.data["High"],
             self.data["Low"],
@@ -127,6 +130,19 @@ class Stock:
             fillna = False
         )
 
+        self.data["stoch_osc"] = momentum.stoch(
+            self.data['High'],
+            self.data['Low'],
+            self.data["Close"],
+            window=short_window,
+            smooth_window=3,
+            fillna=False
+        )
+        self.data["obv"] = volume.on_balance_volume(
+            self.data["Close"],
+            self.data["Volume"],
+            fillna=False
+        )
         self.data["mfi"] = volume.money_flow_index(
             self.data["High"],
             self.data["Low"],

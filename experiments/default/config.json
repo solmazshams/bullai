@@ -11,7 +11,7 @@
     "batch_size" : 65536,
     "initial_balance" : 10000,
     "batch_mode" : "complete_episode",
-    "num_workers" : 4,
+    "num_workers" : 1,
     "obs_components" : [
         "rsi_long",
         "cci_long",
@@ -23,7 +23,11 @@
         "Low",
         "wma_short",
         "macd",
-        "mfi"
+        "mfi",
+        "obv",
+        "stoch_osc",
+        "bollinger_h",
+        "bollinger_l"
         ],
     "other_components" : [
         "rsi_short", "rsi_long", "cci_long",
