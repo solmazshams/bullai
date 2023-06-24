@@ -60,10 +60,21 @@ def evaluate(eval_env,
     if render:
         default_investment = eval_env.df['Close']/eval_env.df['Close'][0]  * eval_config["initial_balance"]
 
-        plt.figure(figsize=(12, 6), dpi = 300)
-        ax1 = plt.subplot2grid((5, 1), (0, 0), rowspan=3, colspan=1)
-        ax2 = plt.subplot2grid((5, 1), (3, 0), rowspan=2, colspan=1, sharex=ax1)
+        plt.figure(figsize=(12, 10), dpi = 300)
+        from cycler import cycler
+        cmap = plt.cm.get_cmap('tab20')
+        num_colors = 20
 
+        # Generate the custom color cycle using the colormap
+        custom_colors = [cmap(i) for i in np.linspace(0, 1, num_colors)]
+
+        # Set the default color cycle for the Axes object
+
+        
+        ax1 = plt.subplot2grid((9, 1), (0, 0), rowspan=2, colspan=1)
+        ax2 = plt.subplot2grid((9, 1), (2, 0), rowspan=2, colspan=1)
+        ax3 = plt.subplot2grid((9, 1), (4, 0), rowspan=5, colspan=1, sharex=ax1)
+        ax3.set_prop_cycle(cycler(color=custom_colors))
 
         ax1.fill_between(
             x=df.index,
@@ -107,6 +118,23 @@ def evaluate(eval_env,
                 linewidths = 0)
 
         ax2.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
+        for indicator in eval_config["obs_components"]:
+            if indicator in ["wma_short", "wma_long", "Close", "Open", "High", "Low", "bollinger_l", "bollinger_h"]:
+                scale = 1/df["wma_long"]
+            else:
+                scale = 1
+            if indicator == "obv":
+                scale = 1/df["Volume"]
+            if indicator in [ "rsi_short", "rsi_long", "roc_long" , "adx", "stoch_osc", "mfi"]:
+                scale = 1/100
+            if indicator in ["cci_long", "cci_short"]:
+                scale = 1/500
+            if indicator=="macd":
+                scale = 1/25
+            
+            print(indicator, " : ", scale * df[indicator].max())
+            ax3.plot(scale * df[indicator], label = indicator)
+        ax3.legend()
         plt.tight_layout()
         plt.savefig(f"plots/portfolio_value_{iteration}.png", dpi=300)
         plt.close('all')

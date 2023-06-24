@@ -177,7 +177,21 @@ class TradeEnv(gym.Env):
             for time_id in range(self.time_idx - self.obs_interval + 1, self.time_idx + 1):
                 for col in self.obs_components:
                     if time_id >= 0:
-                        if col in ["wma_short", "wma_long", "Close", "Open", "High", "Low"]:
+                        for indicator in eval_config["obs_components"]:
+                            if indicator in ["wma_short", "wma_long", "Close", "Open", "High", "Low", "bollinger_l", "bollinger_h"]:
+                                scale = 1/df["wma_long"]
+                            else:
+                                scale = 1
+                            if indicator == "obv":
+                                scale = 1/df["Volume"]
+                            if indicator in [ "rsi_short", "rsi_long", "roc_long" , "adx", "stoch_osc", "mfi"]:
+                                scale = 1/100
+                            if indicator in ["cci_long", "cci_short"]:
+                                scale = 1/500
+                            if indicator=="macd":
+                                scale = 1/25
+
+                        if col in ["wma_short", "wma_long", "Close", "Open", "High", "Low", "bollinger_l", "bollinger_h"]:
                             scale = 1/self.df["wma_long"][self.time_idx]
                         else:
                             scale = 1
