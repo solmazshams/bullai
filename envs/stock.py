@@ -99,12 +99,12 @@ class Stock:
 
         self.data["bollinger_h"] = volatility.bollinger_hband(
             self.data["Close"],
-            window = short_window,
+            window = 200,
             fillna = False
         )
         self.data["bollinger_l"] = volatility.bollinger_lband(
             self.data["Close"],
-            window = short_window,
+            window = 200,
             fillna = False
         )
         self.data["donchian"] = volatility.donchian_channel_wband(
