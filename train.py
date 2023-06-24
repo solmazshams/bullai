@@ -2,11 +2,10 @@
 
 import argparse
 from json import load
+import numpy as np
 
 import ray
 from ray.rllib.algorithms.ppo.ppo import PPOConfig
-from ray.tune.logger import pretty_print
-import numpy as np
 
 import wandb
 
@@ -56,16 +55,18 @@ if __name__ == "__main__":
 
     algo = trainer_config.build()
     for i in range(config["num_iterations"]):
-        result = algo.train()
+        results = algo.train()
         print(f"\033[4miteration = {i}\033[0m")
-        print(pretty_print(result))
-        wandb.log(result["custom_metrics"], step = i)
-        wandb.log({"episode_reward_mean" : result["episode_reward_mean"],
-                   "policy_loss" : result["info"]["learner"]["default_policy"]["learner_stats"]["policy_loss"],
-                   "vf_loss" : result["info"]["learner"]["default_policy"]["learner_stats"]["vf_loss"],
-                   "total_loss" : result["info"]["learner"]["default_policy"]["learner_stats"]["total_loss"]
+        learner_stats = results["info"]["learner"]["default_policy"]["learner_stats"]
+        _results = {"episode_reward_mean" : results["episode_reward_mean"],
+                   "policy_loss" : learner_stats["policy_loss"],
+                   "vf_loss" : learner_stats["vf_loss"],
+                   "total_loss" : learner_stats["total_loss"]
                    }
-                  , step = i)
+        for k,f in _results.items():
+            print(f"{k} : {f:.2f}")
+        wandb.log(results["custom_metrics"], step = i)
+        wandb.log(_results, step = i)
 
         if i % 5 == 0:
             checkpoint_dir = algo.save()

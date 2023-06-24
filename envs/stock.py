@@ -1,11 +1,11 @@
 
 import yfinance as yf
 from ta import trend, momentum, volatility, volume
-from ta.volatility import BollingerBands
+import pandas
 
 class Stock:
     """ StockData class """
-    def __init__(self, symbol, start_date, end_date):
+    def __init__(self, symbol, start_date, end_date, offset_history = 200):
         """
         Initialize the StockData object.
 
@@ -15,6 +15,7 @@ class Stock:
         end_date (str): End date in 'YYYY-MM-DD' format for fetching historical data.
         """
         self.symbol = symbol
+        self.offset_history = offset_history
         self.data = yf.download(
             symbol, start=start_date, end=end_date)  # load data of symbol
         long_window = 28
@@ -152,5 +153,8 @@ class Stock:
             fillna = False
         )
 
-        self.data = self.data.iloc[200:]
-        self.data.fillna(-1, inplace=True)
+        self.data = self.data.iloc[self.offset_history:]
+        self.data = self.data.fillna(-1)
+        
+        self.data.to_csv(f'./data/{self.symbol}.csv', index = True)
+        

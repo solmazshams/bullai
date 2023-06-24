@@ -32,6 +32,7 @@ class TradeEnv(gym.Env):
         self.obs_interval = config["obs_interval"]
         self.symbols = [random.choice(config['symbols'])]
         self.init_balance = config["initial_balance"]
+        self.balance = config["initial_balance"]
         self.start_date = config["start_date"]
         self.end_date = config["end_date"]
         self.action = []
@@ -60,7 +61,6 @@ class TradeEnv(gym.Env):
         )
         self.portfolio_value = self.init_balance
         self.prev_portfolio_value = self.init_balance
-        self.prev_action = [0, 0]
         self.df = None
         self.portfolio = {key: 0 for key in self.symbols}
 
@@ -70,16 +70,11 @@ class TradeEnv(gym.Env):
         """
         Resets the environment to an initial internal state, returning an initial observation and info.
         """
-        self.symbols = [random.choice(self.config["symbols"])]
-        data_length = len(self.stocks[self.symbols[0]].data)
-        # self.min_episode_length = 200
-        # self.episode_length = np.random.randint(self.min_episode_length, min(500, data_length))
-        # self.start_idx = np.random.randint(0, data_length - self.episode_length)
-        self.episode_length = data_length
-        self.start_idx = 0
-        self.df = self.stocks[self.symbols[0]].data.iloc[self.start_idx:self.start_idx+self.episode_length]
+        # self.symbols = [random.choice(self.config["symbols"])]
+        self.df = self.stocks[self.symbols[0]].data
+        self.episode_length = len(self.df)
         self.portfolio = {key: 0 for key in self.symbols}
-        self.portfolio["balance"] = self.init_balance
+        self.balance = self.init_balance
         self.portfolio_value = self.init_balance
         self.prev_portfolio_value = self.init_balance
         self.time_idx = 0
@@ -88,14 +83,15 @@ class TradeEnv(gym.Env):
             self.prev_action = [0, 0]
         elif self.action_type == "portions":
             self.action = [0 for _ in range(len(self.symbols))] + [1]
-            self.prev_action = [[0 for _ in range(len(self.symbols))] + [1],
-                                [0 for _ in range(len(self.symbols))] + [1]]
 
         info = self._get_info()
         observation = self._get_obs()
 
         return observation, info
 
+    def _set_balance(self, amount):
+        self.balance = amount
+    
     def step(self, action):
         """Run one timestep of the trade environment using the agent actions."""
         self._get_portfolio_value()
@@ -116,29 +112,28 @@ class TradeEnv(gym.Env):
                         /len(self.symbols)
                         )
                     self.cost[symbol] = self.df["Close"][self.time_idx]
-                self.portfolio["balance"] = 0
+                self._set_balance(0)
             if action == 2:
                 # sell
-
                 for symbol in self.symbols:
                     # if self.portfolio[symbol] == 0:
                     #     reward -= 1/self.episode_length
                     self.portfolio[symbol] = 0
-                self.portfolio["balance"] = self.portfolio_value
+                self._set_balance(self.portfolio_value)
 
         elif self.action_type == "portions":
             self.action = [a / (np.sum(action) + 0.0001) for a in action]
             self._get_portfolio_value()
-            self.portfolio["balance"] = self.portfolio_value
+            self._set_balance(self.portfolio_value)
             for i, symbol in enumerate(self.symbols):
                 self.portfolio[symbol] = (
                     self.portfolio_value
                     * self.action[i]
                     / self.df["Close"][self.time_idx]
                 )
-                self.portfolio["balance"] -= self.portfolio_value * self.action[i]
+                self.balance -= self.portfolio_value * self.action[i]
             self.action[len(self.symbols)] = (
-                self.portfolio["balance"] / self.portfolio_value
+                self.balance / self.portfolio_value
             )
 
         self.prev_portfolio_value = self.portfolio_value
@@ -149,10 +144,7 @@ class TradeEnv(gym.Env):
         reward += (self.portfolio_value - self.prev_portfolio_value)/self.episode_length
 
         info = self._get_info()
-
         done = truncated = self.time_idx == self.episode_length - 1
-        self.prev_action.append(action)
-        self.prev_action.pop(0)
         return obs, reward, done, truncated, info
 
     def render(self):
@@ -164,7 +156,7 @@ class TradeEnv(gym.Env):
             self.portfolio_value += (
                 self.portfolio[symbol] * self.df["Close"][self.time_idx]
             )
-        self.portfolio_value += self.portfolio["balance"]
+        self.portfolio_value += self.balance
         self.portfolio_value = max(self.portfolio_value, 0)
 
     def _get_obs(self):
@@ -180,21 +172,30 @@ class TradeEnv(gym.Env):
                         # [TODO] seperate the normalization
                         if indicator in ["wma_short", "wma_long", "Close", "Open", "High", "Low", "bollinger_l", "bollinger_h"]:
                             scale = 1/self.df["wma_long"][self.time_idx]
+                            bias = -1
                         else:
                             scale = 1
+                            bias = 0
                         if indicator == "obv":
                             scale = 1/self.df["Volume"][time_id]/20
+                            bias = 0
                         if indicator in [ "rsi_short", "rsi_long", "roc_long" , "adx", "stoch_osc", "mfi"]:
                             scale = 1/100
+                            bias = -0.5
+                            if indicator == "roc_long":
+                                bias = 0
+                            if indicator == "adx":
+                                bias = -0.2
                         if indicator in ["cci_long", "cci_short"]:
                             scale = 1/500
+                            bias = 0
                         if indicator=="macd":
                             scale = 1/25
+                            bias = 0
 
-                        obs.append(scale * self.df[indicator][time_id])
+                        obs.append(scale * self.df[indicator][time_id] + bias)
                     else:
                         obs.append(-1)
-        # obs.extend(self.prev_action)
         return obs
 
     def _get_info(self):

@@ -1,18 +1,18 @@
 {
-    "symbols" : [
+    "symbols": [
         "QCOM"
     ],
-    "start_date" : "2021-01-01",
-    "end_date" : "2023-06-01",
-    "gamma" : 0.9,
-    "lr" : 5e-4,
-    "num_iterations" : 10000,
-    "minibatch_size" : 16384,
-    "batch_size" : 65536,
-    "initial_balance" : 10000,
-    "batch_mode" : "complete_episode",
-    "num_workers" : 1,
-    "obs_components" : [
+    "start_date": "2021-01-01",
+    "end_date": "2023-06-01",
+    "gamma": 0.9,
+    "lr": 5e-4,
+    "num_iterations": 10000,
+    "minibatch_size": 16384,
+    "batch_size": 65536,
+    "initial_balance": 10000,
+    "batch_mode": "complete_episode",
+    "num_workers": 1,
+    "obs_components": [
         "rsi_long",
         "cci_long",
         "roc_long",
@@ -28,15 +28,27 @@
         "stoch_osc",
         "bollinger_h",
         "bollinger_l"
-        ],
-    "other_components" : [
-        "rsi_short", "rsi_long", "cci_long",
-        "roc_short", "roc_long", "cci_short",
-        "Close",    "mfi",
-        "Open",
-        "High",
-        "Low",        "wma_short",
-        "adx_short", "adx_long", "wma_long"],
-    "obs_interval" : 3,
-    "action_type" : "buy_sell_hold"
+    ],
+    "indicator_values": {
+        "wma_short": {"scale": 1, "bias": 0},
+        "wma_long": {"scale": 1, "bias": 0},
+        "Close": {"scale": 1, "bias": 0},
+        "Open": {"scale": 1, "bias": 0},
+        "High": {"scale": 1, "bias": 0},
+        "Low": {"scale": 1, "bias": 0},
+        "bollinger_l": {"scale": 1, "bias": 0},
+        "bollinger_h": {"scale": 1, "bias": 0},
+        "obv": {"scale": 1, "bias": 0},
+        "rsi_short": {"scale": 0.01, "bias": -0.5},
+        "rsi_long": {"scale": 0.01, "bias": -0.5},
+        "roc_long": {"scale": 0.01, "bias": 0},
+        "adx": {"scale": 0.01, "bias": -0.2},
+        "stoch_osc": {"scale": 0.01, "bias": -0.5},
+        "mfi": {"scale": 0.01, "bias": -0.5},
+        "cci_long": {"scale": 0.002, "bias": 0},
+        "cci_short": {"scale": 0.002, "bias": 0},
+        "macd": {"scale": 0.04, "bias": 0}
+      },
+    "obs_interval": 3,
+    "action_type": "buy_sell_hold"
 }

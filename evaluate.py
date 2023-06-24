@@ -121,24 +121,46 @@ def evaluate(eval_env,
             ax.set_prop_cycle(cycler(color=custom_colors))
 
             for indicator in eval_config["obs_components"]:
-                if indicator in ["wma_short", "wma_long", "Close", "Open", "High", "Low", "bollinger_l", "bollinger_h"]:
+                if indicator in ["wma_short", 
+                                 "wma_long", 
+                                 "Close", 
+                                 "Open", 
+                                 "High", 
+                                 "Low", 
+                                 "bollinger_l", 
+                                 "bollinger_h"]:
                     scale = 1/df["wma_long"]
+                    bias = -1
                 else:
                     scale = 1
+                    bias = 0
                 if indicator == "obv":
                     scale = 1/df["Volume"]/20
+                    bias = 0
                 if indicator in [ "rsi_short", "rsi_long", "roc_long" , "adx", "stoch_osc", "mfi"]:
                     scale = 1/100
+                    bias = -0.5
+                    if indicator == "roc_long":
+                        bias = 0
+                    if indicator == "adx":
+                        bias = -0.2
                 if indicator in ["cci_long", "cci_short"]:
                     scale = 1/500
+                    bias = 0
                 if indicator=="macd":
                     scale = 1/25
+                    bias = 0
                 
-                print(indicator, " : ", (scale * df[indicator]).max())
-                ax.plot(scale * df[indicator], label = indicator, linewidth = 0.5)
+                print(indicator,
+                    f", max: {(scale * df[indicator]).max() + bias:.2f}",
+                    f", min: {(scale * df[indicator]).min() + bias:.2f}",
+                    f", mean: {(scale * df[indicator]).mean() + bias:.2f}"
+                    )
+
+                ax.plot(scale * df[indicator] + bias, label = indicator, linewidth = 0.5)
             ax.legend()
             plt.tight_layout()
-            plt.savefig(f"plots/scaled_features.png", dpi = 300)
+            plt.savefig("plots/scaled_features.png", dpi = 300)
 
     return {'eval_portfolio_value' : info["portfolio_value"],
             'eval_episode_reward' : episode_reward}
