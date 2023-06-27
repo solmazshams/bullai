@@ -141,7 +141,7 @@ class TradeEnv(gym.Env):
         # move to next time
         self.time_idx += 1
         self._get_portfolio_value()
-        reward += (self.portfolio_value - self.prev_portfolio_value)/self.episode_length
+        reward += (self.portfolio_value - self.prev_portfolio_value)/self.episode_length/10
 
         info = self._get_info()
         done = truncated = self.time_idx == self.episode_length - 1

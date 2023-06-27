@@ -1,7 +1,7 @@
+""" StockData class """
 
 import yfinance as yf
 from ta import trend, momentum, volatility, volume
-import pandas
 
 class Stock:
     """ StockData class """
@@ -155,6 +155,5 @@ class Stock:
 
         self.data = self.data.iloc[self.offset_history:]
         self.data = self.data.fillna(-1)
-        
+
         self.data.to_csv(f'./data/{self.symbol}.csv', index = True)
-        
