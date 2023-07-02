@@ -9,7 +9,15 @@ from cycler import cycler
 
 with open("./experiments/evaluation/eval_config.json", "r", encoding='utf-8') as f:
     eval_config = load(f)
-
+def sharpe(values, initial_value = 10000):
+    final_return = values[-1]
+    if final_return > initial_value:
+        R_p = (final_return/initial_value)**(1/len(values)) - 1
+        excess_return = initial_value*(1 + R_p)**np.arange(len(values))/values - 1
+        s_p = np.std(excess_return)
+        return R_p/s_p
+    else:
+        return 0
 def evaluate(eval_env,
              checkpoint_dir=None,
              render = True,
@@ -71,7 +79,7 @@ def evaluate(eval_env,
 
     if render:
         default_investment = data['Close']/data['Close'][0]  * eval_config["initial_balance"]
-
+        sharpe_ratio = sharpe(all_portfolio_values)
         plt.figure(figsize=(10, 6), dpi = 300)
 
 
@@ -88,7 +96,7 @@ def evaluate(eval_env,
         ax1.fill_between(data.index, eval_config["initial_balance"], all_portfolio_values,
                         where = np.array(all_portfolio_values) < eval_config["initial_balance"],
                 facecolor='tomato', alpha=0.5)
-        ax1.set_title(eval_env.symbols[0])
+        ax1.set_title(f"{eval_env.symbols[0]} with Sharpe ratio : {sharpe_ratio:0.3f}")
         ax1.plot(data.index, all_portfolio_values, color = 'k', linewidth = 1)
         ax1.fill_between(data.index, eval_config["initial_balance"], default_investment,
                 facecolor='silver', alpha=0.25)
@@ -139,40 +147,13 @@ def evaluate(eval_env,
             axes.set_prop_cycle(cycler(color=custom_colors))
 
             for indicator in eval_config["obs_components"]:
-                if indicator in ["wma_short",
-                                 "wma_long",
-                                 "Close",
-                                 "Open",
-                                 "High",
-                                 "Low",
-                                 "bollinger_l",
-                                 "bollinger_h"]:
-                    scale = 1/data["wma_long"]
-                    bias = -1
-                else:
-                    scale = 1
-                    bias = 0
-                if indicator == "obv":
-                    scale = 1/data["Volume"]/20
-                    bias = 0
-                if indicator in [ "rsi_short", "rsi_long", "roc_long" , "adx", "stoch_osc", "mfi"]:
-                    scale = 1/100
-                    bias = -0.5
-                    if indicator == "roc_long":
-                        bias = 0
-                    if indicator == "adx":
-                        bias = -0.2
-                if indicator in ["cci_long", "cci_short"]:
-                    scale = 1/500
-                    bias = 0
-                if indicator=="macd":
-                    scale = 1/25
-                    bias = 0
+                scale = eval_env.stocks[eval_config['symbols'][0]].normalization_info[indicator][0]
+                bias = eval_env.stocks[eval_config['symbols'][0]].normalization_info[indicator][1]
 
                 print(f"{indicator:15s}",
-                    f"\n\t max:  {(scale * data[indicator]).max() + bias:.2f}",
-                    f"\n\t min:  {(scale * data[indicator]).min() + bias:.2f}",
-                    f"\n\t mean: {(scale * data[indicator]).mean() + bias:.2f}"
+                    f"\n\t max:  {scale * (data[indicator].max() - bias):.2f}",
+                    f"\n\t min:  {scale * (data[indicator].min() - bias):.2f}",
+                    f"\n\t mean: {scale * (data[indicator].mean() - bias):.2f}"
                     )
 
                 axes.plot(scale * data[indicator] + bias, label = indicator, linewidth = 0.5)

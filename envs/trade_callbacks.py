@@ -25,5 +25,5 @@ class TradeCallbacks(DefaultCallbacks):
                        **kwargs
                        ):
         symbols = episode._last_infos["agent0"]["symbols"]
-        # episode.custom_metrics["sharpe_ratio"] = episode._last_infos["agent0"]["sharpe_ratio"]
+        episode.custom_metrics["sharpe_ratio"] = episode._last_infos["agent0"]["sharpe_ratio"]
         episode.custom_metrics["portfolio_value"] = episode._last_infos["agent0"]["portfolio_value"]

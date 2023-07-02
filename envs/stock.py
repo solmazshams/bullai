@@ -2,10 +2,11 @@
 
 import yfinance as yf
 from ta import trend, momentum, volatility, volume
-
+import numpy as np
+import pandas as pd
 class Stock:
     """ StockData class """
-    def __init__(self, symbol, start_date, end_date, offset_history = 200):
+    def __init__(self, symbol, start_date, end_date, indicators = None, offset_history = 200):
         """
         Initialize the StockData object.
 
@@ -16,13 +17,17 @@ class Stock:
         """
         self.symbol = symbol
         self.offset_history = offset_history
+        self.indicators = indicators
         self.data = yf.download(
             symbol, start=start_date, end=end_date)  # load data of symbol
-        long_window = 28
-        short_window = 14
+        # self.data.to_csv(f'./data/{self.symbol}.csv', index = True)
+        # _data = pd.read_csv(f'./data/{self.symbol}.csv')
+        # self.data = _data.loc[(_data['Date'] >= start_date) & (_data['Date'] <= end_date)]
+        long_window = 26
+        short_window = 12
         self.data["rsi_short"] = momentum.rsi(
             self.data["Close"],
-            window=short_window,
+            window=6,
             fillna=False)
 
         self.data["rsi_long"] = momentum.rsi(
@@ -54,21 +59,21 @@ class Stock:
             window=long_window,
             fillna=False)
 
-        # self.data["adx_short"] = trend.ADXIndicator(
-        #     self.data["High"],
-        #     self.data["Low"],
-        #     self.data["Close"],
-        #     window=short_window,
-        #     fillna=False
-        # ).adx()
+        self.data["adx_short"] = trend.ADXIndicator(
+            self.data["High"],
+            self.data["Low"],
+            self.data["Close"],
+            window=short_window,
+            fillna=False
+        ).adx()
 
-        # self.data["adx_long"] = trend.ADXIndicator(
-        #     self.data["High"],
-        #     self.data["Low"],
-        #     self.data["Close"],
-        #     window=long_window,
-        #     fillna=False
-        # ).adx()
+        self.data["adx_long"] = trend.ADXIndicator(
+            self.data["High"],
+            self.data["Low"],
+            self.data["Close"],
+            window=long_window,
+            fillna=False
+        ).adx()
 
         self.data["adx"] = trend.ADXIndicator(
             self.data["High"],
@@ -156,4 +161,13 @@ class Stock:
         self.data = self.data.iloc[self.offset_history:]
         self.data = self.data.fillna(-1)
 
-        self.data.to_csv(f'./data/{self.symbol}.csv', index = True)
+        # self.data.to_csv(f'./data/{self.symbol}.csv', index = True)
+        
+        self.normalization_info = {}
+        
+        for indicator in self.indicators:
+            min_value = np.min(self.data[indicator])
+            max_value = np.max(self.data[indicator])
+            scale_factor = max_value - min_value
+            bias_factor = min_value * scale_factor
+            self.normalization_info[indicator] = (scale_factor, bias_factor)

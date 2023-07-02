@@ -43,8 +43,8 @@ if __name__ == "__main__":
             sgd_minibatch_size = config["minibatch_size"],
             num_sgd_iter = 20,
             model = {
-                "fcnet_hiddens": [4, 16],
-                "fcnet_activation": "relu",
+                "fcnet_hiddens": [32, 32],
+                # "fcnet_activation": "relu",
             },
         )
         .callbacks(TradeCallbacks)

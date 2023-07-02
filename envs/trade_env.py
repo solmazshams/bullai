@@ -11,7 +11,15 @@ import random
 import pandas as pd
 from envs.stock import Stock
 
-
+def sharpe(values, initial_value = 10000):
+    final_return = values[-1]
+    if final_return > initial_value:
+        R_p = (final_return/initial_value)**(1/len(values)) - 1
+        excess_return = initial_value*(1 + R_p)**np.arange(len(values))/values - 1
+        s_p = np.std(excess_return)
+        return R_p/s_p
+    else:
+        return 0
 class TradeEnv(gym.Env):
     """
     Custom Gym environment for trading.
@@ -41,7 +49,7 @@ class TradeEnv(gym.Env):
 
         for symbol in config['symbols']:
             self.stocks[symbol] = Stock(
-                symbol=symbol, start_date=self.start_date, end_date=self.end_date
+                symbol=symbol, start_date=self.start_date, end_date=self.end_date, indicators=self.obs_components
             )
         self.time_idx = 0
         self.episode_length = len(self.stocks[config["symbols"][0]].data)
@@ -78,6 +86,7 @@ class TradeEnv(gym.Env):
         self.portfolio_value = self.init_balance
         self.prev_portfolio_value = self.init_balance
         self.time_idx = 0
+        self.values = []
         if self.action_type == "buy_sell_hold":
             self.action = [0]
             self.prev_action = [0, 0]
@@ -95,7 +104,7 @@ class TradeEnv(gym.Env):
     def step(self, action):
         """Run one timestep of the trade environment using the agent actions."""
         self._get_portfolio_value()
-
+        self.values.append(self.portfolio_value)
         reward = 0
         if self.action_type == "buy_sell_hold":
             if action == 0:
@@ -141,10 +150,11 @@ class TradeEnv(gym.Env):
         # move to next time
         self.time_idx += 1
         self._get_portfolio_value()
-        reward += (self.portfolio_value - self.prev_portfolio_value)/self.episode_length/10
+        reward += (self.portfolio_value - self.prev_portfolio_value)/self.episode_length
 
-        info = self._get_info()
+
         done = truncated = self.time_idx == self.episode_length - 1
+        info = self._get_info(done=done)
         return obs, reward, done, truncated, info
 
     def render(self):
@@ -165,42 +175,20 @@ class TradeEnv(gym.Env):
             if self.portfolio[symbol] > 0:
                 obs.append(self.cost[symbol]/self.df["wma_long"][self.time_idx])
             else:
-                obs.append(-1)
+                obs.append(0)
             for time_id in range(self.time_idx - self.obs_interval + 1, self.time_idx + 1):
                 for indicator in self.obs_components:
                     if time_id >= 0:
-                        # [TODO] seperate the normalization
-                        if indicator in ["wma_short", "wma_long", "Close", "Open", "High", "Low", "bollinger_l", "bollinger_h"]:
-                            scale = 1/self.df["wma_long"][self.time_idx]
-                            bias = -1
-                        else:
-                            scale = 1
-                            bias = 0
-                        if indicator == "obv":
-                            scale = 1/self.df["Volume"][time_id]/20
-                            bias = 0
-                        if indicator in [ "rsi_short", "rsi_long", "roc_long" , "adx", "stoch_osc", "mfi"]:
-                            scale = 1/100
-                            bias = -0.5
-                            if indicator == "roc_long":
-                                bias = 0
-                            if indicator == "adx":
-                                bias = -0.2
-                        if indicator in ["cci_long", "cci_short"]:
-                            scale = 1/500
-                            bias = 0
-                        if indicator=="macd":
-                            scale = 1/25
-                            bias = 0
-
-                        obs.append(scale * self.df[indicator][time_id] + bias)
+                        scale = self.stocks[self.symbols[0]].normalization_info[indicator][0]
+                        bias = self.stocks[self.symbols[0]].normalization_info[indicator][1]
+                        obs.append((self.df[indicator][time_id] - bias) * scale)
                     else:
                         obs.append(-1)
         return obs
 
-    def _get_info(self):
+    def _get_info(self, done=False):
         return {
-            "sharpe_ratio": 1,
+            "sharpe_ratio": sharpe(self.values, self.init_balance) if done else 0,
             "portfolio_value": self.portfolio_value,
             "symbols": self.symbols
         }

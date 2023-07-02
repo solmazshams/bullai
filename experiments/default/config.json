@@ -5,27 +5,34 @@
   "gamma": 0.9,
   "lr": 5e-4,
   "num_iterations": 10000,
-  "minibatch_size": 256,
-  "batch_size": 2048,
+  "minibatch_size": 8192,
+  "batch_size": 65536,
   "initial_balance": 10000,
   "batch_mode": "complete_episode",
-  "num_workers": 1,
+  "num_workers": 8,
   "obs_components": [
     "rsi_long",
+    "rsi_short",
     "cci_long",
+    "cci_short",
     "roc_long",
-    "adx",
+    "roc_short",
+    "adx_long",
+    "adx_short",
     "Close",
     "Open",
     "High",
     "Low",
-    "wma_short",
     "macd",
+    "bollinger_h",
+    "bollinger_l"
+  ],
+  "other_indicators": [
     "mfi",
     "obv",
     "stoch_osc",
-    "bollinger_h",
-    "bollinger_l"
+    "wma_short",
+    "wma_long"
   ],
   "indicator_values": {
     "wma_short": {"scale": 1, "bias": 0},
@@ -47,6 +54,6 @@
     "cci_short": {"scale": 0.002, "bias": 0},
     "macd": {"scale": 0.04, "bias": 0}
   },
-  "obs_interval": 3,
+  "obs_interval": 5,
   "action_type": "buy_sell_hold"
 }
