@@ -162,12 +162,12 @@ class Stock:
         self.data = self.data.fillna(-1)
 
         # self.data.to_csv(f'./data/{self.symbol}.csv', index = True)
-        
+
         self.normalization_info = {}
-        
+
         for indicator in self.indicators:
             min_value = np.min(self.data[indicator])
             max_value = np.max(self.data[indicator])
-            scale_factor = max_value - min_value
-            bias_factor = min_value * scale_factor
+            scale_factor = 2/(max_value - min_value)
+            bias_factor = - min_value * scale_factor - 1
             self.normalization_info[indicator] = (scale_factor, bias_factor)
