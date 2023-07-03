@@ -181,7 +181,7 @@ class TradeEnv(gym.Env):
                     if time_id >= 0:
                         scale = self.stocks[self.symbols[0]].normalization_info[indicator][0]
                         bias = self.stocks[self.symbols[0]].normalization_info[indicator][1]
-                        obs.append(self.df[indicator][time_id] * scale + bias)
+                        obs.append(self.df.loc[time_id, indicator] * scale + bias)
                     else:
                         obs.append(-1)
         return obs

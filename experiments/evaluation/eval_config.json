@@ -2,8 +2,8 @@
     "symbols": [
         "QQQ"
     ],
-    "start_date": "2018-01-01",
-    "end_date": "2021-01-01",
+    "start_date": "2020-01-01",
+    "end_date": "2023-01-01",
     "gamma": 0.9,
     "lr": 5e-4,
     "num_iterations": 10000,

@@ -33,7 +33,6 @@ if __name__ == "__main__":
     )
 
     ray.init(num_gpus=0)
-    eval_env = TradeEnv(config = eval_config)
     trainer_config = (
         PPOConfig()
         .training(
@@ -54,6 +53,8 @@ if __name__ == "__main__":
     )
 
     algo = trainer_config.build()
+    eval_env = TradeEnv(config = eval_config)
+
     for i in range(config["num_iterations"]):
         results = algo.train()
         print(f"\033[4miteration = {i}\033[0m")

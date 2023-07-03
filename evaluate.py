@@ -151,9 +151,9 @@ def evaluate(eval_env,
                 bias = eval_env.stocks[eval_config['symbols'][0]].normalization_info[indicator][1]
 
                 print(f"{indicator:15s}",
-                    f"\n\t max:  {scale * (data[indicator].max() + bias):.2f}",
-                    f"\n\t min:  {scale * (data[indicator].min() + bias):.2f}",
-                    f"\n\t mean: {scale * (data[indicator].mean() + bias):.2f}"
+                    f"\n\t max:  {scale * data[indicator].max() + bias:.2f}",
+                    f"\n\t min:  {scale * data[indicator].min() + bias:.2f}",
+                    f"\n\t mean: {scale * data[indicator].mean() + bias:.2f}"
                     )
 
                 axes.plot(scale * data[indicator] + bias, label = indicator, linewidth = 0.5)
