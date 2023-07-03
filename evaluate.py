@@ -3,21 +3,25 @@ from json import load
 
 from ray.rllib.algorithms.algorithm import Algorithm
 import matplotlib.pyplot as plt
+import matplotlib.dates as mdates
 import numpy as np
 from cycler import cycler
 
 
 with open("./experiments/evaluation/eval_config.json", "r", encoding='utf-8') as f:
     eval_config = load(f)
+
 def sharpe(values, initial_value = 10000):
+    """ compute sharpe ratio of investment """
     final_return = values[-1]
     if final_return > initial_value:
-        R_p = (final_return/initial_value)**(1/len(values)) - 1
-        excess_return = initial_value*(1 + R_p)**np.arange(len(values))/values - 1
-        s_p = np.std(excess_return)
-        return R_p/s_p
+        average_return = (final_return/initial_value)**(1/len(values)) - 1
+        excess_return = initial_value*(1 + average_return)**np.arange(len(values))/values - 1
+        excess_return_std = np.std(excess_return)
+        return average_return/excess_return_std
     else:
         return 0
+
 def evaluate(eval_env,
              checkpoint_dir=None,
              render = True,
@@ -80,6 +84,7 @@ def evaluate(eval_env,
     if render:
         default_investment = data['Close']/data['Close'][0]  * eval_config["initial_balance"]
         sharpe_ratio = sharpe(all_portfolio_values)
+        # data.set_index('Date', inplace = True)
         plt.figure(figsize=(10, 6), dpi = 300)
 
 
@@ -157,6 +162,8 @@ def evaluate(eval_env,
                     )
 
                 axes.plot(scale * data[indicator] + bias, label = indicator, linewidth = 0.5)
+            plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=6))
+            plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
             axes.legend()
             plt.tight_layout()
             plt.savefig("plots/scaled_features.png", dpi = 300)

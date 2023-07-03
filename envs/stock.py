@@ -1,6 +1,6 @@
 """ StockData class """
 
-import yfinance as yf
+# import yfinance as yf
 from ta import trend, momentum, volatility, volume
 import numpy as np
 import pandas as pd
@@ -161,9 +161,10 @@ class Stock:
         self.data = self.data.iloc[self.offset_history:]
         self.data = self.data.fillna(-1)
 
-        self.data.to_csv(f'./data/{self.symbol}_TA.csv', index = True)
+        # self.data.to_csv(f'./data/{self.symbol}_TA.csv', index = True)
         self._normalize()
-        self.data = self.data.loc[(self.data['Date'] >= start_date) & (self.data['Date'] <= end_date)].copy()
+        self.data = self.data.loc[
+            (self.data['Date'] >= start_date) & (self.data['Date'] <= end_date)].copy()
         self.data.reset_index(drop = True, inplace=True)
 
     def _normalize(self):

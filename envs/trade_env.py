@@ -4,20 +4,20 @@
 
 """
 
+import random
 import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
-import random
-import pandas as pd
 from envs.stock import Stock
 
 def sharpe(values, initial_value = 10000):
+    """ compute sharpe ratio of investment """
     final_return = values[-1]
     if final_return > initial_value:
-        R_p = (final_return/initial_value)**(1/len(values)) - 1
-        excess_return = initial_value*(1 + R_p)**np.arange(len(values))/values - 1
-        s_p = np.std(excess_return)
-        return R_p/s_p
+        average_return = (final_return/initial_value)**(1/len(values)) - 1
+        excess_return = initial_value*(1 + average_return)**np.arange(len(values))/values - 1
+        excess_return_std = np.std(excess_return)
+        return average_return/excess_return_std
     else:
         return 0
 class TradeEnv(gym.Env):
@@ -49,7 +49,10 @@ class TradeEnv(gym.Env):
 
         for symbol in config['symbols']:
             self.stocks[symbol] = Stock(
-                symbol=symbol, start_date=self.start_date, end_date=self.end_date, indicators=self.obs_components
+                symbol=symbol,
+                start_date=self.start_date,
+                end_date=self.end_date,
+                indicators=self.obs_components
             )
         self.time_idx = 0
         self.episode_length = len(self.stocks[config["symbols"][0]].data)
@@ -76,7 +79,8 @@ class TradeEnv(gym.Env):
 
     def reset(self, *, seed = None, options = None):
         """
-        Resets the environment to an initial internal state, returning an initial observation and info.
+        Resets the environment to an initial internal state, 
+        returning an initial observation and info.
         """
         # self.symbols = [random.choice(self.config["symbols"])]
         self.df = self.stocks[self.symbols[0]].data
@@ -100,7 +104,7 @@ class TradeEnv(gym.Env):
 
     def _set_balance(self, amount):
         self.balance = amount
-    
+
     def step(self, action):
         """Run one timestep of the trade environment using the agent actions."""
         self._get_portfolio_value()
