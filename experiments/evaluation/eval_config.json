@@ -3,7 +3,7 @@
         "QQQ"
     ],
     "start_date": "2021-07-01",
-    "end_date": "2023-07-01",
+    "end_date": "2023-01-01",
     "gamma": 0.9,
     "lr": 5e-4,
     "num_iterations": 10000,

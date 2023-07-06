@@ -34,7 +34,6 @@ class TradeEnv(gym.Env):
     """
 
     def __init__(self, config):
-        self.config = config
         self.obs_components = config["obs_components"]
         self.action_type = config["action_type"]
         self.obs_interval = config["obs_interval"]
@@ -82,8 +81,7 @@ class TradeEnv(gym.Env):
         Resets the environment to an initial internal state, 
         returning an initial observation and info.
         """
-        # self.symbols = [random.choice(self.config["symbols"])]
-        self.df = self.stocks[self.symbols[0]].data
+        self.df = self.stocks[self.symbols[0]].data.copy()
         self.episode_length = len(self.df)
         self.portfolio = {key: 0 for key in self.symbols}
         self.df["portfolio"] = 0

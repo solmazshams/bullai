@@ -9,7 +9,7 @@
   "batch_size": 65536,
   "initial_balance": 10000,
   "batch_mode": "complete_episode",
-  "num_workers": 8,
+  "num_workers": 4,
   "obs_components": [
     "rsi_long",
     "rsi_short",

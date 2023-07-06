@@ -1,6 +1,5 @@
 """ StockData class """
 
-# import yfinance as yf
 from ta import trend, momentum, volatility, volume
 import numpy as np
 import pandas as pd
@@ -20,9 +19,6 @@ class Stock:
         self.offset_history = offset_history
         self.indicators = indicators
         self.normalization_info = {}
-        # self.data = yf.download(
-        #     symbol, start=start_date, end=end_date)  # load data of symbol
-        # self.data.to_csv(f'./data/{self.symbol}.csv', index = True)
         self.data = pd.read_csv(f'./data/{self.symbol}.csv')
         long_window = 26
         short_window = 12

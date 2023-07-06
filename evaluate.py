@@ -3,7 +3,7 @@ from json import load
 
 from ray.rllib.algorithms.algorithm import Algorithm
 import matplotlib.pyplot as plt
-# import matplotlib.dates as mdates
+import matplotlib.dates as mdates
 # matplotlib.use('Agg')
 import numpy as np
 from cycler import cycler
@@ -55,7 +55,7 @@ def evaluate(eval_env,
     episode_reward = 0.0
 
     time_idx = 0
-    data = eval_env.df
+    data = eval_env.df.copy()
     buy_signals = []
     sell_signals = []
     data['portfolio_value'] =  eval_config["initial_balance"]
@@ -104,7 +104,7 @@ def evaluate(eval_env,
 
         ax1 = plt.subplot2grid((4, 1), (0, 0), rowspan=2, colspan=1)
         ax2 = plt.subplot2grid((4, 1), (2, 0), rowspan=2, colspan=1, sharex=ax1)
-
+        data.set_index('Date', inplace = True)
         ax1.fill_between(
             x=data.index,
             y1=eval_config["initial_balance"],
@@ -131,28 +131,23 @@ def evaluate(eval_env,
             color='black', linestyle='-.',
             linewidth=0.5, alpha=0.75, zorder=-1)
 
-        for signal in buy_signals:
-            if data["portfolio"][signal] == 0:
+        signal_data = [
+            (buy_signals, '^', 'forestgreen', 0.9),
+            (sell_signals, 'v', 'tomato', 1.1)
+        ]
+
+        for signals, marker, color, scale in signal_data:
+            for signal in signals:
                 ax2.scatter(
                     data.index[signal],
-                    data["Close"][signal]*0.9,
-                    marker = '^',
-                    s = 60,
-                    color='forestgreen',
-                    alpha = 0.5,
-                    linewidths = 0)
-
-        for signal in sell_signals:
-            if data["portfolio"][signal] > 0:
-                ax2.scatter(
-                    data.index[signal],
-                    data["Close"][signal]*1.1,
-                    marker = 'v',
-                    s = 60,
-                    color='tomato',
-                    alpha = 0.5,
-                    linewidths = 0)
-
+                    data["Close"][signal] * scale,
+                    marker=marker,
+                    s=60,
+                    color=color,
+                    alpha=0.5,
+                    linewidths=0
+                )
+        plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
         ax2.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
         plt.tight_layout()
         plt.savefig(f"plots/portfolio_value_{iteration}.png", dpi=300)
@@ -176,8 +171,7 @@ def evaluate(eval_env,
                     )
 
                 axes.plot(scale * data[indicator] + bias, label = indicator, linewidth = 0.5)
-            # plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=6))
-            # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m'))
+            plt.gca().xaxis.set_major_locator(mdates.AutoDateLocator())
             axes.legend()
             plt.tight_layout()
             plt.savefig("plots/scaled_features.png", dpi = 300)
