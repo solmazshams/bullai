@@ -4,6 +4,7 @@
 from ta import trend, momentum, volatility, volume
 import numpy as np
 import pandas as pd
+np.seterr(divide='ignore', invalid='ignore')
 class Stock:
     """ StockData class """
     def __init__(self, symbol, start_date, end_date, indicators = None, offset_history = 200):

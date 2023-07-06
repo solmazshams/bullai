@@ -2,8 +2,8 @@
     "symbols": [
         "QQQ"
     ],
-    "start_date": "2020-01-01",
-    "end_date": "2023-01-01",
+    "start_date": "2021-07-01",
+    "end_date": "2023-07-01",
     "gamma": 0.9,
     "lr": 5e-4,
     "num_iterations": 10000,
@@ -56,6 +56,6 @@
         "cci_short": {"scale": 0.002, "bias": 0},
         "macd": {"scale": 0.04, "bias": 0}
       },
-    "obs_interval": 5,
+    "obs_interval": 3,
     "action_type": "buy_sell_hold"
 }

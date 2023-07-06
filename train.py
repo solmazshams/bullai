@@ -11,7 +11,8 @@ import wandb
 from envs.trade_env import TradeEnv
 from envs.trade_callbacks import TradeCallbacks
 from evaluate import evaluate
-
+import numpy as np
+np.seterr(divide='ignore', invalid='ignore')
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--exp", type=str, default="default", help="experiment name")

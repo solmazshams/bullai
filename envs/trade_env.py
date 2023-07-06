@@ -14,8 +14,8 @@ def sharpe(values, initial_value = 10000):
     """ compute sharpe ratio of investment """
     final_return = values[-1]
     if final_return > initial_value:
-        average_return = (final_return/initial_value)**(1/len(values)) - 1
-        excess_return = initial_value*(1 + average_return)**np.arange(len(values))/values - 1
+        average_return = (final_return - initial_value)/len(values)
+        excess_return = values - (initial_value + average_return*np.arange(len(values)))
         excess_return_std = np.std(excess_return)
         return average_return/excess_return_std
     else:
@@ -86,6 +86,7 @@ class TradeEnv(gym.Env):
         self.df = self.stocks[self.symbols[0]].data
         self.episode_length = len(self.df)
         self.portfolio = {key: 0 for key in self.symbols}
+        self.df["portfolio"] = 0
         self.balance = self.init_balance
         self.portfolio_value = self.init_balance
         self.prev_portfolio_value = self.init_balance
@@ -133,6 +134,7 @@ class TradeEnv(gym.Env):
                     #     reward -= 1/self.episode_length
                     self.portfolio[symbol] = 0
                 self._set_balance(self.portfolio_value)
+            self.df.loc[self.time_idx, "portfolio"] = self.portfolio[self.symbols[0]]
 
         elif self.action_type == "portions":
             self.action = [a / (np.sum(action) + 0.0001) for a in action]
@@ -185,14 +187,28 @@ class TradeEnv(gym.Env):
                     if time_id >= 0:
                         scale = self.stocks[self.symbols[0]].normalization_info[indicator][0]
                         bias = self.stocks[self.symbols[0]].normalization_info[indicator][1]
+                        if indicator in ['Close', 'Open', 'High', 'Low']:
+                            scale = 2/self.df.loc[self.time_idx, "wma_long"]
+                            bias = -2
                         obs.append(self.df.loc[time_id, indicator] * scale + bias)
                     else:
                         obs.append(-1)
         return obs
 
     def _get_info(self, done=False):
+        self.df['Returns'] = self.df['Close'].pct_change()
+
+        # Compute the average daily return and daily risk-free rate (assumed to be 0 for simplicity)
+        avg_return = self.df['Returns'].mean()
+        risk_free_rate = 0
+
+        # Compute the standard deviation of daily returns
+        std_dev = self.df['Returns'].std()
+
+        # Compute the annualized Sharpe Ratio
+        sharpe_ratio = (avg_return - risk_free_rate) / std_dev * np.sqrt(252)  # Assuming 252 trading days in a year
         return {
-            "sharpe_ratio": sharpe(self.values, self.init_balance) if done else 0,
+            "sharpe_ratio": sharpe_ratio if done else 0,
             "portfolio_value": self.portfolio_value,
             "symbols": self.symbols
         }
