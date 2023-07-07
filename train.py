@@ -65,16 +65,16 @@ if __name__ == "__main__":
                    "total_loss" : learner_stats["total_loss"]
                    }
         for k,f in _results.items():
-            print(f"{k} : {f:.2f}")
+            print(f"{k:20s} : {f:.4f}")
         wandb.log(results["custom_metrics"], step = i)
         wandb.log(_results, step = i)
 
         if i % 5 == 0:
             checkpoint_dir = algo.save()
             print(f"Checkpoint saved in directory {checkpoint_dir}")
-            eval_results= evaluate(eval_env=eval_env,
+            eval_results= evaluate(env=eval_env,
                                     checkpoint_dir=checkpoint_dir,
-                                    render = True,
+                                    render = False,
                                     iteration = i)
             wandb.log(eval_results, step = i)
 
