@@ -53,7 +53,8 @@ if __name__ == "__main__":
     )
 
     algo = trainer_config.build()
-    eval_env = TradeEnv(config = eval_config)
+    env = TradeEnv(config = config)
+    eval_env = TradeEnv(config = eval_config, normalization_info=env.normalization_info)
 
     for i in range(config["num_iterations"]):
         results = algo.train()
@@ -74,7 +75,7 @@ if __name__ == "__main__":
             print(f"Checkpoint saved in directory {checkpoint_dir}")
             eval_results= evaluate(env=eval_env,
                                     checkpoint_dir=checkpoint_dir,
-                                    render = False,
+                                    render = True,
                                     iteration = i)
             wandb.log(eval_results, step = i)
 

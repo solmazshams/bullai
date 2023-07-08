@@ -6,7 +6,10 @@ import numpy as np
 import pandas as pd
 class Stock:
     """ StockData class """
-    def __init__(self, symbol, start_date, end_date, indicators = None, offset_history = 200):
+    def __init__(self, symbol, start_date, end_date,
+                 indicators = None,
+                 offset_history = 200,
+                 normalization_info = None):
         """
         Initialize the StockData object.
 
@@ -18,7 +21,7 @@ class Stock:
         self.symbol = symbol
         self.offset_history = offset_history
         self.indicators = indicators
-        self.normalization_info = {}
+        self.normalization_info = normalization_info
         # self.data = yf.download(
         #     symbol, start=start_date, end=end_date)  # load data of symbol
         # self.data.to_csv(f'./data/{self.symbol}.csv', index = True)
@@ -162,9 +165,11 @@ class Stock:
         self.data = self.data.fillna(-1)
 
         # self.data.to_csv(f'./data/{self.symbol}_TA.csv', index = True)
-        self._normalize()
         self.data = self.data.loc[
             (self.data['Date'] >= start_date) & (self.data['Date'] <= end_date)].copy()
+        if self.normalization_info is None:
+            print("initial normalization on training data!")
+            self._normalize()
         self.data.reset_index(drop = True, inplace=True)
 
     def _normalize(self):

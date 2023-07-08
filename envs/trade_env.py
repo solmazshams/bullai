@@ -8,17 +8,7 @@ import numpy as np
 import gymnasium as gym
 from gymnasium.spaces import Box, Discrete
 from envs.stock import Stock
-
-def sharpe(values, initial_value = 10000):
-    """ compute sharpe ratio of investment """
-    final_return = values[-1]
-    if final_return > initial_value:
-        average_return = (final_return/initial_value)**(1/len(values)) - 1
-        excess_return = initial_value*(1 + average_return)**np.arange(len(values))/values - 1
-        excess_return_std = np.std(excess_return)
-        return average_return/excess_return_std
-    else:
-        return 0
+np.seterr(divide='ignore', invalid='ignore')
 class TradeEnv(gym.Env):
     """
     Custom Gym environment for trading.
@@ -32,7 +22,7 @@ class TradeEnv(gym.Env):
         stocks (dict): Dictionary to store Stock objects for each symbol.
     """
 
-    def __init__(self, config):
+    def __init__(self, config, normalization_info=None):
         self.config         = config
         self.symbols        = config["symbols"]
         self.indicators     = config["indicators"]
@@ -43,6 +33,7 @@ class TradeEnv(gym.Env):
         self.end_date       = config["end_date"]
         self.cost           = {}
         self.stocks         = []
+        self.normalization_info = normalization_info
 
         for symbol in self.symbols:
             self.stocks.append(
@@ -50,7 +41,8 @@ class TradeEnv(gym.Env):
                     symbol=symbol,
                     start_date=self.start_date,
                     end_date=self.end_date,
-                    indicators=self.indicators
+                    indicators=self.indicators,
+                    normalization_info=self.normalization_info
                     )
             )
 
@@ -69,23 +61,22 @@ class TradeEnv(gym.Env):
         self.observation_space = Box(
             low=-np.inf, high=np.inf, shape=(self.num_states,), dtype=np.float32
         )
-        self.portfolio_values = []
+        self.portfolio_values = [self.init_balance]
 
         self.reset()
 
     def reset(self, *, seed = None, options = None):
         """
         Resets the environment to an initial internal state,
-        returning an initial observation and info.
         """
         # [TODO] this works for single stock now
         self.data = self.stocks[0].data.copy()
+        self.data["portfolio_values"] = self.init_balance
         self.episode_length = len(self.data)
         self.num_shares = {key: 0 for key in self.symbols}
         self.balance = self.init_balance
         self.portfolio_value = self.init_balance
         self.prev_portfolio_value = self.init_balance
-        self.portfolio_values = [self.init_balance]
         self.time_idx = 0
         self.cost = {}
         info = self._get_info()
@@ -104,18 +95,19 @@ class TradeEnv(gym.Env):
                     self.portfolio_value/self.data["Close"][self.time_idx]
                     )
                 self.cost[symbol] = self.data["Close"][self.time_idx]
-                self._set_balance(0)
+                self._set_balance(0.0)
             elif action == 2:
-                self.num_shares[symbol] = 0
+                self.num_shares[symbol] = 0.0
                 self._set_balance(self.portfolio_value)
 
         self.time_idx += 1
         self._update_portfolio_value()
-
+        self.data.loc[self.time_idx, "portfolio_values"] = self.portfolio_value
         obs = self._get_obs()
-        reward = (
-            self.portfolio_value - self.prev_portfolio_value
-            )/self.episode_length/10
+        # reward = (
+        #     self.portfolio_value - self.prev_portfolio_value
+        #     )/self.episode_length/10
+        reward = self.portfolio_value/self.prev_portfolio_value - 1
 
         done = truncated = self.time_idx == self.episode_length - 1
         info = self._get_info()
@@ -129,7 +121,7 @@ class TradeEnv(gym.Env):
                 self.num_shares[symbol] * self.data["Close"][self.time_idx]
             )
         self.portfolio_value += self.balance
-        self.portfolio_value = max(self.portfolio_value, 0)
+        self.portfolio_value = max(self.portfolio_value, 0.0)
 
     def _get_obs(self):
         obs = []
@@ -162,9 +154,9 @@ class TradeEnv(gym.Env):
         pass
 
     def _sharpe(self):
-        return_rates = self.data['Close'].pct_change()
+        return_rates = self.data["portfolio_values"].pct_change()
         avg_return = return_rates.mean()
-        risk_free_rate = 0
+        risk_free_rate = 0.0
         std_dev = return_rates.std()
         # 252 trading days in a year
         sharpe_ratio = (avg_return - risk_free_rate) / std_dev * np.sqrt(252)

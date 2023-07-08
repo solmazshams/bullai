@@ -2,12 +2,13 @@
 from json import load
 
 from ray.rllib.algorithms.algorithm import Algorithm
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 import numpy as np
 from cycler import cycler
 
-
+matplotlib.use('Agg')
 with open("./experiments/evaluation/eval_config.json", "r", encoding='utf-8') as f:
     config = load(f)
 
@@ -123,14 +124,14 @@ def evaluate(env,
                 color='tomato',
                 alpha = 0.5,
                 linewidths = 0)
-
+        plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=6))
         ax2.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
         plt.tight_layout()
         plt.savefig(f"plots/portfolio_value_{iteration}.png", dpi=300)
         plt.close('all')
 
         if iteration == 0:
-            _, axes = plt.subplots(figsize=(12, 8), dpi = 300)
+            _, axes = plt.subplots(figsize=(8, 6), dpi = 300)
             cmap = plt.cm.get_cmap('tab20')
             num_colors = 20
             custom_colors = [cmap(i) for i in np.linspace(0, 1, num_colors)]
