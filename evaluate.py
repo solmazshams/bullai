@@ -61,6 +61,7 @@ def evaluate(env,
         time_idx += 1
 
     portfolio_values.append(info["portfolio_value"])
+    portfolio_values = np.array(portfolio_values)
 
     print(f"\033[4mEpisode done: Total reward = {episode_reward}\033[0m")
     print("Portfolio:")
@@ -97,15 +98,27 @@ def evaluate(env,
         ax1.tick_params(axis='x', labelbottom=False)
         ax1.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
         ax2.plot(data.index, data["Close"], linewidth = 0.5, color = 'black')
-        ax2.plot(data.index, data["wma_short"],\
+        ax2.plot(data.index, data["ema_short"],\
             color='black', linestyle='--',
             linewidth=0.5, alpha=0.25, zorder=-1)
 
-        ax2.plot(data.index, data["wma_long"],
+        ax2.plot(data.index, data["ema_long"],
             color='black', linestyle='-.',
             linewidth=0.5, alpha=0.25, zorder=-1)
+        ax2_ = ax2.twinx()
+        ax2_.plot(data.index, data["rsi_long"],
+            color='dodgerblue',
+            linewidth=0.5, alpha=0.25, zorder=-1)
+        ax2_.plot(data.index, data["macd"],
+            color='purple', linestyle='--',
+            linewidth=0.5, alpha=0.25, zorder=-1)
+        ax2_.plot(data.index, data["cci_long"],
+            color='gold',
+            linewidth=0.5, alpha=0.25, zorder=-1)
+        data_index = np.zeros((len(data.index)))
 
         for signal in buy_signals:
+            data_index[signal:] += +1
             ax2.scatter(
                 data.index[signal],
                 data["Close"][signal]*0.9,
@@ -116,6 +129,7 @@ def evaluate(env,
                 linewidths = 0)
 
         for signal in sell_signals:
+            data_index[signal:] += -1
             ax2.scatter(
                 data.index[signal],
                 data["Close"][signal]*1.1,
@@ -124,33 +138,17 @@ def evaluate(env,
                 color='tomato',
                 alpha = 0.5,
                 linewidths = 0)
+
+        long_indices = data_index > 0
+        short_indices = data_index == 0
+        ax2.plot(data.index[long_indices], data["Close"][long_indices], color = 'g', linewidth = 0, marker = '.', markersize = 2, alpha = 0.5)
+        ax2.plot(data.index[short_indices], data["Close"][short_indices], color = 'r', linewidth = 0, marker = '.', markersize = 2, alpha = 0.5)
+
         plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=6))
         ax2.grid(color = 'olive', linewidth = 0.5, alpha = 0.25, linestyle = ':')
         plt.tight_layout()
         plt.savefig(f"plots/portfolio_value_{iteration}.png", dpi=300)
         plt.close('all')
-
-        if iteration == 0:
-            _, axes = plt.subplots(figsize=(8, 6), dpi = 300)
-            cmap = plt.cm.get_cmap('tab20')
-            num_colors = 20
-            custom_colors = [cmap(i) for i in np.linspace(0, 1, num_colors)]
-            axes.set_prop_cycle(cycler(color=custom_colors))
-
-            for indicator in config["indicators"]:
-                scale = env.stocks[0].normalization_info[indicator][0]
-                bias = env.stocks[0].normalization_info[indicator][1]
-                print(f"{indicator:15s}",
-                    f"\n\t max:  {scale * data[indicator].max() + bias:.2f}",
-                    f"\n\t min:  {scale * data[indicator].min() + bias:.2f}",
-                    f"\n\t mean: {scale * data[indicator].mean() + bias:.2f}"
-                    )
-
-                axes.plot(scale * data[indicator] + bias, label = indicator, linewidth = 0.5)
-            plt.gca().xaxis.set_major_locator(mdates.MonthLocator(interval=6))
-            axes.legend()
-            plt.tight_layout()
-            plt.savefig("plots/scaled_features.png", dpi = 300)
 
     return {'eval_portfolio_value' : info["portfolio_value"],
             'eval_episode_reward' : episode_reward,

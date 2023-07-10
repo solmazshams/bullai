@@ -100,12 +100,22 @@ class Stock:
             fillna = False
         )
 
+        self.data.loc[:, "ema_long"] = trend.ema_indicator(
+            self.data["Close"],
+            window = 200,
+            fillna = False
+        )
+        self.data.loc[:, "ema_short"] = trend.ema_indicator(
+            self.data["Close"],
+            window = 50,
+            fillna = False
+        )
+
         self.data.loc[:, "wma_long"] = trend.wma_indicator(
             self.data["Close"],
             window = 200,
             fillna = False
         )
-
         self.data.loc[:, "bollinger_h"] = volatility.bollinger_hband(
             self.data["Close"],
             window = 200,

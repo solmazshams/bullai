@@ -26,11 +26,9 @@
     "macd",
     "mfi",
     "stoch_osc",
-    "wma_long",
-    "wma_short",
-    "obv",
+    "ema_short",
     "bollinger_h",
     "bollinger_l"
   ],
-  "time_window": 5
+  "time_window": 6
 }

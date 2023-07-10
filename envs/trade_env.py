@@ -127,17 +127,19 @@ class TradeEnv(gym.Env):
         obs = []
         for symbol in self.symbols:
             if self.num_shares[symbol] > 0:
-                obs.append(self.cost[symbol]/self.data["wma_long"][self.time_idx])
+                obs.append(self.cost[symbol]/self.data["ema_long"][self.time_idx])
             else:
                 obs.append(0)
             for time_id in range(self.time_idx - self.time_window + 1, self.time_idx + 1):
                 for indicator in self.indicators:
                     if time_id >= 0:
-                        scale = self.stocks[0].normalization_info[indicator][0]
-                        bias = self.stocks[0].normalization_info[indicator][1]
-                        if indicator in ["Close", "Open", "Low", "High", "wma_short", "wma_long"]:
-                            scale = 2/self.data.loc[self.time_idx, "wma_long"]
-                            bias = -2
+                        # scale = self.stocks[0].normalization_info[indicator][0]
+                        # bias = self.stocks[0].normalization_info[indicator][1]
+                        scale = 1
+                        bias = 0
+                        if indicator in ["Close", "Open", "Low", "High", "ema_short", "ema_long", "bollinger_h", "bollinger_l"]:
+                            scale = 1/self.data.loc[self.time_idx, "ema_long"]
+                            bias = 0
                         obs.append(self.data.loc[time_id, indicator] * scale + bias)
                     else:
                         obs.append(-1)

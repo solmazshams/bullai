@@ -40,16 +40,20 @@ if __name__ == "__main__":
             lr =  config["lr"],
             train_batch_size = config["batch_size"],
             sgd_minibatch_size = config["minibatch_size"],
-            num_sgd_iter = 20,
+            num_sgd_iter = 30,
             model = {
                 "fcnet_hiddens": [32, 32],
-                # "fcnet_activation": "relu",
+                "fcnet_activation": "relu",
             },
         )
         .callbacks(TradeCallbacks)
         .rollouts(num_rollout_workers=config["num_workers"])
         .resources(num_gpus=0)
         .environment(env=TradeEnv, env_config = config)
+        .evaluation(evaluation_config={
+            "explore" : False
+            },
+            evaluation_interval=5, evaluation_duration=1, )
     )
 
     algo = trainer_config.build()
@@ -73,6 +77,7 @@ if __name__ == "__main__":
         if i % 5 == 0:
             checkpoint_dir = algo.save()
             print(f"Checkpoint saved in directory {checkpoint_dir}")
+            eval_results = algo.evaluate()
             eval_results= evaluate(env=eval_env,
                                     checkpoint_dir=checkpoint_dir,
                                     render = True,
