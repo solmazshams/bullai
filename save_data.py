@@ -2,7 +2,7 @@
 """
 import yfinance as yf
 
-symbol = 'QQQ'
+symbol = 'SPY'
 start_date = '1999-01-01'
 data = yf.download(
     symbol, start=start_date)  # load data of symbol

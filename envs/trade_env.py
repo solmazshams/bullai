@@ -54,7 +54,7 @@ class TradeEnv(gym.Env):
         self.data = None
         self.num_shares = {key: 0 for key in self.symbols}
         self.num_actions = 3
-        self.num_states = 1 + (len(self.indicators) * self.time_window) * self.num_symbols
+        self.num_states = (len(self.indicators) * self.time_window) * self.num_symbols
 
         self.action_space = Discrete(self.num_actions)
 
@@ -126,10 +126,10 @@ class TradeEnv(gym.Env):
     def _get_obs(self):
         obs = []
         for symbol in self.symbols:
-            if self.num_shares[symbol] > 0:
-                obs.append(self.cost[symbol]/self.data["ema_long"][self.time_idx])
-            else:
-                obs.append(0)
+            # if self.num_shares[symbol] > 0:
+            #     obs.append(self.cost[symbol]/self.data["ema_long"][self.time_idx])
+            # else:
+            #     obs.append(0)
             for time_id in range(self.time_idx - self.time_window + 1, self.time_idx + 1):
                 for indicator in self.indicators:
                     if time_id >= 0:

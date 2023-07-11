@@ -42,7 +42,7 @@ if __name__ == "__main__":
             sgd_minibatch_size = config["minibatch_size"],
             num_sgd_iter = 30,
             model = {
-                "fcnet_hiddens": [32, 32],
+                "fcnet_hiddens": [16, 16],
                 "fcnet_activation": "relu",
             },
         )
@@ -50,10 +50,6 @@ if __name__ == "__main__":
         .rollouts(num_rollout_workers=config["num_workers"])
         .resources(num_gpus=0)
         .environment(env=TradeEnv, env_config = config)
-        .evaluation(evaluation_config={
-            "explore" : False
-            },
-            evaluation_interval=5, evaluation_duration=1, )
     )
 
     algo = trainer_config.build()
@@ -67,7 +63,8 @@ if __name__ == "__main__":
         _results = {"episode_reward_mean" : results["episode_reward_mean"],
                    "policy_loss" : learner_stats["policy_loss"],
                    "vf_loss" : learner_stats["vf_loss"],
-                   "total_loss" : learner_stats["total_loss"]
+                   "total_loss" : learner_stats["total_loss"],
+                   "sharpe_ratio" : results["custom_metrics"]["sharpe_ratio_mean"]
                    }
         for k,f in _results.items():
             print(f"{k:20s} : {f:.4f}")
@@ -77,7 +74,6 @@ if __name__ == "__main__":
         if i % 5 == 0:
             checkpoint_dir = algo.save()
             print(f"Checkpoint saved in directory {checkpoint_dir}")
-            eval_results = algo.evaluate()
             eval_results= evaluate(env=eval_env,
                                     checkpoint_dir=checkpoint_dir,
                                     render = True,

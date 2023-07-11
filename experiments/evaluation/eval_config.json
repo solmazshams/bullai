@@ -1,9 +1,9 @@
 {
     "symbols": [
-        "QQQ"
+        "QCOM"
     ],
     "start_date": "2021-01-01",
-    "end_date": "2023-07-07",
+    "end_date": "2023-07-11",
     "gamma": 0.9,
     "lr": 5e-4,
     "num_iterations": 10000,
