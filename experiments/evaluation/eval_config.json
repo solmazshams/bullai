@@ -1,9 +1,9 @@
 {
     "symbols": [
-        "QCOM"
+        "QQQ"
     ],
-    "start_date": "2021-01-01",
-    "end_date": "2023-07-11",
+    "start_date": "2022-01-01",
+    "end_date": "2023-08-11",
     "gamma": 0.9,
     "lr": 5e-4,
     "num_iterations": 10000,
@@ -15,22 +15,11 @@
     "indicators": [
         "rsi_long",
         "rsi_short",
-        "cci_long",
-        "cci_short",
         "roc_long",
         "roc_short",
         "adx_long",
         "adx_short",
-        "Close",
-        "Open",
-        "High",
-        "Low",
-        "macd",
-        "mfi",
-        "stoch_osc",
-        "ema_short",
-        "bollinger_h",
-        "bollinger_l"
+        "macd"
       ],
     "time_window": 6
 }
